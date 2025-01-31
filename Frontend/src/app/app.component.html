@@ -1,0 +1,42 @@
+<div class="layout">
+  <p-menubar class="top-menu" [model]="menuItems">
+    <ng-template pTemplate="start">
+      <img src="logo.svg" height="40" class="mr-2" alt="logo" />
+    </ng-template>
+    <ng-template pTemplate="end">
+      <div class="user-profile" *ngIf="isAuthenticated">
+        <p-button
+          icon="pi pi-cog"
+          styleClass="p-button-rounded p-button-text mr-2"
+          [routerLink]="['/config']"
+          pTooltip="System Configuration"
+        ></p-button>
+        <p-button
+          icon="pi pi-bell"
+          styleClass="p-button-rounded p-button-text mr-2"
+          [routerLink]="['/notifications']"
+          pTooltip="Notifications"
+        ></p-button>
+        <p-avatar
+          class="avatar2"
+          [image]="avatarUrl"
+          shape="circle"
+          [style]="{ cursor: 'pointer' }"
+          (click)="menu.toggle($event)"
+        ></p-avatar>
+        <p-menu #menu [popup]="true" [model]="profileItems"></p-menu>
+      </div>
+    </ng-template>
+  </p-menubar>
+
+  <div class="content">
+    <router-outlet></router-outlet>
+  </div>
+
+  <footer class="footer">
+    <div class="footer-content">
+      <span>&copy; {{ currentYear }} PanicBlaster</span>
+      <span class="version">v{{ version }}</span>
+    </div>
+  </footer>
+</div>

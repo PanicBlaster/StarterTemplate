@@ -1,0 +1,28 @@
+.login-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: calc(100vh - 4rem);
+    background-color: #f5f5f5;
+}
+
+.field {
+    margin-bottom: 1.5rem;
+}
+
+:host ::ng-deep {
+    .p-float-label {
+        display: block;
+        margin-bottom: 1rem;
+    }
+
+    .p-inputtext, .p-password {
+        width: 100%;
+    }
+
+    .p-card {
+        .p-card-body {
+            padding: 2rem;
+        }
+    }
+} 

@@ -1,0 +1,70 @@
+<svg width="32" height="32" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
+  <style>
+    svg { background: transparent; }
+    @media (prefers-color-scheme: dark) {
+    .stroke { stroke: #ffffff; }
+    .fill-accent { fill: #ff4d4d; }
+    .fill-body { fill: #ffffff; }
+    .fill-window { fill: #87ceeb; }
+    }
+    @media (prefers-color-scheme: light) {
+    .stroke { stroke: #2c3e50; }
+    .fill-accent { fill: #e74c3c; }
+    .fill-body { fill: #ffffff; }
+    .fill-window { fill: #87ceeb; }
+    }
+  </style>
+
+  <!-- Rocket Body -->
+  <path
+    d="M16 4
+       L20 12
+       L20 24
+       C20 26 18 28 16 28
+       C14 28 12 26 12 24
+       L12 12
+       Z"
+    class="fill-body stroke"
+    stroke-width="1.5"
+  />
+
+  <!-- Window -->
+  <circle
+    cx="16"
+    cy="16"
+    r="3"
+    class="fill-window stroke"
+    stroke-width="1.5"
+  />
+
+  <!-- Left Fin -->
+  <path
+    d="M12 20
+       L8 26
+       L12 26
+       Z"
+    class="fill-accent stroke"
+    stroke-width="1.5"
+  />
+
+  <!-- Right Fin -->
+  <path
+    d="M20 20
+       L24 26
+       L20 26
+       Z"
+    class="fill-accent stroke"
+    stroke-width="1.5"
+  />
+
+  <!-- Flame -->
+  <path
+    d="M14 28
+       L16 32
+       L18 28"
+    fill="none"
+    stroke="#f39c12"
+    stroke-width="2"
+    stroke-linecap="round"
+  />
+</svg> 
