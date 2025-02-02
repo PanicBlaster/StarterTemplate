@@ -3,15 +3,16 @@
 ## Database Creation
 
 ```bash
-createdb panicblaster_qa
+createdb myapp
 ```
 
 ```bash
-createuser -P panicblaster_qa
+createuser -P myapp
+```
 ```
 
 ```bash
-createdb -O panicblaster_qa panicblaster_qa
+createdb -O myapp myapp
 ```
 
 ## Connect to the database from terminal
@@ -23,7 +24,7 @@ psql -U username -d database -h hostname -p port
 As an example:
 
 ```bash
-psql -U panicblaster_qa -d panicblaster_qa -h localhost -p 5432
+psql -U myapp -d myapp -h localhost -p 5432
 ```
 
 Root level access
@@ -49,9 +50,9 @@ SELECT usename FROM pg_user;
 ## Postgresql Create database and user with password
 
 ```sql
-CREATE DATABASE panicblaster_qa;
-CREATE USER panicblaster_qa WITH PASSWORD 'Hello42';
-GRANT ALL PRIVILEGES ON DATABASE panicblaster_qa TO panicblaster_qa;
+CREATE DATABASE myapp;
+CREATE USER myapp WITH PASSWORD 'APassword';
+GRANT ALL PRIVILEGES ON DATABASE myapp TO myapp;
 ```
 
 ## Common commands
