@@ -1,5 +1,11 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsString, IsNotEmpty, IsOptional, IsBoolean } from 'class-validator';
+import {
+  IsString,
+  IsNotEmpty,
+  IsOptional,
+  IsBoolean,
+  IsUUID,
+} from 'class-validator';
 
 export class CreateTenantDto {
   @ApiProperty({ example: 'Acme Corp' })
@@ -16,6 +22,10 @@ export class CreateTenantDto {
   @IsBoolean()
   @IsOptional()
   isActive?: boolean;
+
+  @IsOptional()
+  @IsString()
+  description?: string;
 }
 
 export class UpdateTenantDto {
@@ -33,6 +43,10 @@ export class UpdateTenantDto {
   @IsBoolean()
   @IsOptional()
   isActive?: boolean;
+
+  @IsOptional()
+  @IsString()
+  description?: string;
 }
 
 export class TenantQueryDto {
@@ -66,4 +80,9 @@ export class TenantDto implements CreateTenantDto {
   @IsString()
   @IsOptional()
   notes?: string;
+}
+
+export class TenantIdDto {
+  @IsUUID()
+  tenantId: string;
 }

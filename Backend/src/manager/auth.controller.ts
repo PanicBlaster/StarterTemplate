@@ -11,8 +11,8 @@ import { UserAccess } from '../access/services/user-access.service';
 import { TenantAccess } from '../access/services/tenant-access.service';
 import { HttpService } from '@nestjs/axios';
 import { firstValueFrom } from 'rxjs';
-import { AuthResponse, MSSignInDto } from '../common/dto/auth.dto';
-import { SigninDto, SignupDto } from '../common/dto/auth.dto';
+import { AuthResponse, MSSignInDto, SignupDto } from '../common/dto/auth.dto';
+import { SigninDto } from './auth.dto';
 
 @ApiTags('auth')
 @Controller('api/auth')

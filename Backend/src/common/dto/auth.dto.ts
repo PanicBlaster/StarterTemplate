@@ -60,7 +60,7 @@ export class AuthResponseDto implements AuthResponse {
   user: any;
 }
 
-export class SigninDto {
+export class LoginDto {
   @ApiProperty({ example: 'john.doe' })
   @IsString()
   @IsNotEmpty()
@@ -97,6 +97,16 @@ export class SignupDto {
   @IsString()
   @IsOptional()
   lastName?: string;
+
+  @ApiPropertyOptional({ example: '+1234567890' })
+  @IsString()
+  @IsOptional()
+  phone?: string;
+
+  @ApiPropertyOptional({ description: 'Tenant name to join' })
+  @IsString()
+  @IsOptional()
+  tenantName?: string;
 
   @ApiPropertyOptional({ description: 'Tenant ID to join' })
   @IsUUID()

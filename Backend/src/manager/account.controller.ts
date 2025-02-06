@@ -48,60 +48,7 @@ import {
   AddUserToTenantDto,
   ChangePasswordDto,
 } from '../common/dto/account.dto';
-
-export class LoginDto {
-  @ApiProperty({ example: 'john.doe' })
-  @IsString()
-  @IsNotEmpty()
-  username: string;
-
-  @ApiProperty({ example: 'password123' })
-  @IsString()
-  @IsNotEmpty()
-  password: string;
-}
-
-export class SignupDto {
-  @ApiProperty({ example: 'john.doe' })
-  @IsString()
-  @IsNotEmpty()
-  username: string;
-
-  @ApiProperty({ example: 'password123' })
-  @IsString()
-  @IsNotEmpty()
-  password: string;
-
-  @ApiProperty({ example: 'john@example.com' })
-  @IsEmail()
-  @IsNotEmpty()
-  email: string;
-
-  @ApiPropertyOptional({ example: 'John' })
-  @IsString()
-  @IsOptional()
-  firstName?: string;
-
-  @ApiPropertyOptional({ example: 'Doe' })
-  @IsString()
-  @IsOptional()
-  lastName?: string;
-
-  @ApiPropertyOptional({ example: '+1234567890' })
-  @IsString()
-  @IsOptional()
-  phone?: string;
-
-  @ApiPropertyOptional({ description: 'Tenant name to join' })
-  @IsString()
-  @IsOptional()
-  tenantName?: string;
-
-  @ApiPropertyOptional({ description: 'Tenant ID to join' })
-  @IsUUID()
-  @IsOptional()
-  tenantId?: string;
-}
+import { LoginDto, SignupDto } from '../common/dto/auth.dto';
 
 @ApiTags('accounts')
 @Controller('api/account')
