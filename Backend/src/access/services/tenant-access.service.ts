@@ -2,7 +2,6 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { HttpService } from '@nestjs/axios';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { Tenant } from '../entities/tenant.entity';
 import { v4 as uuidv4 } from 'uuid';
 import {
   PaginationOptions,
@@ -10,6 +9,7 @@ import {
 } from '../../common/dto/pagination.dto';
 import { QueryOptionsDto, QueryResult } from '../../common/dto/query.dto';
 import { CreateTenantDto, UpdateTenantDto } from '../../common/dto/tenant.dto';
+import { Tenant } from '../entities/tenant.entity';
 
 @Injectable()
 export class TenantAccess {

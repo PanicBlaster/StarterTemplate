@@ -2,7 +2,8 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { NotFoundException } from '@nestjs/common';
-import { Tenant } from 'src/access/entities/tenant.entity';
+import { HttpService } from '@nestjs/axios';
+import { Tenant } from '../../entities/tenant.entity';
 import { TenantAccess } from '../tenant-access.service';
 
 describe('TenantAccess', () => {
@@ -25,6 +26,11 @@ describe('TenantAccess', () => {
     save: jest.fn(),
   };
 
+  const mockHttpService = {
+    get: jest.fn(),
+    post: jest.fn(),
+  };
+
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
@@ -32,6 +38,10 @@ describe('TenantAccess', () => {
         {
           provide: getRepositoryToken(Tenant),
           useValue: mockRepository,
+        },
+        {
+          provide: HttpService,
+          useValue: mockHttpService,
         },
       ],
     }).compile();
