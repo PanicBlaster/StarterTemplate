@@ -1,4 +1,4 @@
-# Panic Blaster
+# Panic Blaster - Frontend Template
 
 # DPL API
 
