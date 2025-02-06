@@ -11,6 +11,9 @@ import {
   Headers,
   BadRequestException,
   Request,
+  UnauthorizedException,
+  Logger,
+  UseGuards,
 } from '@nestjs/common';
 import {
   ApiTags,
@@ -35,6 +38,16 @@ import {
 } from '../common/dto/pagination.dto';
 import { AuthResponse, AuthResponseDto } from '../common/dto/auth.dto';
 import { QueryOptionsDto, QueryResult } from '../common/dto/query.dto';
+import { HttpService } from '@nestjs/axios';
+import { firstValueFrom } from 'rxjs';
+import { JwtAuthGuard } from 'src/auth/jwt.guard';
+import {
+  CreateAccountDto,
+  UpdateAccountDto,
+  AccountQueryDto,
+  AddUserToTenantDto,
+  ChangePasswordDto,
+} from '../common/dto/account.dto';
 
 export class LoginDto {
   @ApiProperty({ example: 'john.doe' })
@@ -46,68 +59,6 @@ export class LoginDto {
   @IsString()
   @IsNotEmpty()
   password: string;
-}
-
-export class CreateAccountDto {
-  @ApiProperty({ example: 'john.doe' })
-  @IsString()
-  @IsNotEmpty()
-  username: string;
-
-  @ApiProperty({ example: 'password123' })
-  @IsString()
-  @IsNotEmpty()
-  password: string;
-
-  @ApiProperty({ example: 'john@example.com' })
-  @IsEmail()
-  @IsNotEmpty()
-  email: string;
-
-  @ApiProperty({ example: 'John Doe' })
-  @IsString()
-  @IsNotEmpty()
-  fullName: string;
-}
-
-export class UpdateAccountDto {
-  @ApiPropertyOptional({ example: 'john@newdomain.com' })
-  @IsEmail()
-  @IsOptional()
-  email?: string;
-
-  @ApiPropertyOptional({ example: 'John Smith' })
-  @IsString()
-  @IsOptional()
-  fullName?: string;
-
-  @ApiPropertyOptional()
-  @IsString()
-  @IsOptional()
-  password?: string;
-}
-
-export class AccountQueryDto implements PaginationOptions {
-  @ApiPropertyOptional({
-    description: 'Page number (1-based)',
-    minimum: 1,
-    type: Number,
-  })
-  @IsOptional()
-  page?: number;
-
-  @ApiPropertyOptional({
-    description: 'Number of items per page',
-    minimum: 1,
-    type: Number,
-  })
-  @IsOptional()
-  limit?: number;
-
-  @ApiPropertyOptional({ description: 'Filter by tenant ID' })
-  @IsUUID()
-  @IsOptional()
-  tenantId?: string;
 }
 
 export class SignupDto {
@@ -140,36 +91,28 @@ export class SignupDto {
   @IsString()
   @IsOptional()
   phone?: string;
-}
 
-export class ChangePasswordDto {
-  @ApiProperty({ description: 'Current password' })
+  @ApiPropertyOptional({ description: 'Tenant name to join' })
   @IsString()
-  @IsNotEmpty()
-  currentPassword: string;
+  @IsOptional()
+  tenantName?: string;
 
-  @ApiProperty({ description: 'New password' })
-  @IsString()
-  @IsNotEmpty()
-  newPassword: string;
+  @ApiPropertyOptional({ description: 'Tenant ID to join' })
+  @IsUUID()
+  @IsOptional()
+  tenantId?: string;
 }
 
 @ApiTags('accounts')
 @Controller('api/account')
+@UseGuards(JwtAuthGuard)
 export class AccountController {
-  constructor(private readonly userAccess: UserAccess) {}
+  private readonly logger = new Logger(AccountController.name);
 
-  @Post('login')
-  @ApiOperation({ summary: 'Authenticate user' })
-  @ApiResponse({
-    status: 200,
-    description: 'Login successful',
-    type: AuthResponseDto,
-  })
-  @ApiResponse({ status: 401, description: 'Invalid credentials' })
-  async login(@Body(ValidationPipe) loginDto: LoginDto): Promise<AuthResponse> {
-    return this.userAccess.verifyAuth(loginDto.username, loginDto.password);
-  }
+  constructor(
+    private readonly userAccess: UserAccess,
+    private readonly httpService: HttpService
+  ) {}
 
   @Get()
   @ApiOperation({ summary: 'Get all accounts' })
@@ -229,21 +172,33 @@ export class AccountController {
     }
   }
 
-  @Post('signup')
-  @ApiOperation({ summary: 'Sign up a new user' })
+  @Post('tenant/add-user')
+  @ApiOperation({ summary: 'Add a user to a tenant' })
   @ApiResponse({
-    status: 201,
-    description: 'Account created successfully',
-    type: AuthResponseDto,
+    status: 200,
+    description: 'User added to tenant successfully',
   })
-  async signup(
-    @Body(ValidationPipe) signupDto: SignupDto
-  ): Promise<AuthResponse> {
-    // Create the user
-    const user = await this.userAccess.upsert(signupDto);
+  @ApiResponse({ status: 404, description: 'User or tenant not found' })
+  @ApiHeader({
+    name: 'X-Tenant-ID',
+    required: false,
+    description: 'Optional tenant ID',
+  })
+  async addUserToTenant(
+    @Body(ValidationPipe) data: AddUserToTenantDto,
+    @Headers('X-Tenant-ID') headerTenantId?: string
+  ): Promise<void> {
+    const tenantId = data.tenantId || headerTenantId;
+    if (!tenantId) {
+      throw new BadRequestException(
+        'Tenant ID must be provided in body or header'
+      );
+    }
 
-    // Generate token and return auth response
-    return this.userAccess.verifyAuth(user.username, signupDto.password);
+    const user = await this.userAccess.find(data.userId);
+    if (!user) {
+      throw new NotFoundException(`User with ID ${data.userId} not found`);
+    }
   }
 
   @Post('changepassword')

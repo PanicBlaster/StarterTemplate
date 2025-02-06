@@ -521,3 +521,17 @@ GET /api/client/:clientId/project
 -> ProjectAccess.findByClient
 -> ProjectRepository.findByClientId
 ```
+
+## Authentication Operations
+
+### User Registration (Signup)
+
+```
+POST /api/auth/signup
+-> AuthController.signup
+-> UserAccess.upsert
+-> bcrypt.hash
+-> UserRepository.create/save
+-> UserAccess.verifyAuth
+-> Returns { accessToken, user }
+```

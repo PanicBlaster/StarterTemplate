@@ -7,6 +7,8 @@ import {
   CreateDateColumn,
   UpdateDateColumn,
 } from 'typeorm';
+import { Tenant } from './tenant.entity';
+import { ApiProperty } from '@nestjs/swagger';
 
 @Entity('users')
 export class User {
@@ -34,9 +36,21 @@ export class User {
   @Column({ nullable: true })
   role?: string;
 
+  @ManyToMany(() => Tenant)
+  @JoinTable({
+    name: 'user_tenants',
+    joinColumn: { name: 'user_id', referencedColumnName: 'id' },
+    inverseJoinColumn: { name: 'tenant_id', referencedColumnName: 'id' },
+  })
+  tenants: Tenant[];
+
   @CreateDateColumn()
   createdAt: Date;
 
   @UpdateDateColumn()
   updatedAt: Date;
+
+  @ApiProperty({ description: 'Authentication source' })
+  @Column({ default: 'LOCAL' })
+  source: string;
 }

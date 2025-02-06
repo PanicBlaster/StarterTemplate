@@ -40,7 +40,7 @@ async function bootstrap() {
     ],
   });
 
-  logger.log('Starting DontPanic API...');
+  logger.log('Starting Starter Template API...');
   logger.log(`Environment: ${process.env.NODE_ENV}`);
 
   const app = await NestFactory.create(AppModule, {
@@ -71,10 +71,10 @@ async function bootstrap() {
 
   // Configure Swagger
   const config = new DocumentBuilder()
-    .setTitle('DontPanic Template API')
-    .setDescription('The DontPanic Template API description')
+    .setTitle('Starter Template API')
+    .setDescription('Backend API for Starter Template')
     .setVersion('1.0')
-    .addTag('DPL API', 'Tenant management endpoints')
+    .addTag('API', 'Tenant, users and auth')
     .build();
 
   const document = SwaggerModule.createDocument(app, config);

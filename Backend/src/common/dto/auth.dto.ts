@@ -1,8 +1,20 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import {
+  IsString,
+  IsNotEmpty,
+  IsEmail,
+  IsOptional,
+  IsUUID,
+} from 'class-validator';
 
 export interface JwtPayload {
   userId: string;
   username: string;
+}
+
+interface TenantInfo {
+  id: string;
+  name: string;
 }
 
 export interface AuthResponse {
@@ -15,6 +27,7 @@ export interface AuthResponse {
     email: string;
     phone: string;
     role: string;
+    tenants: TenantInfo[];
   };
 }
 
@@ -32,7 +45,68 @@ export class AuthResponseDto implements AuthResponse {
       email: { type: 'string' },
       phone: { type: 'string' },
       role: { type: 'string' },
+      tenants: {
+        type: 'array',
+        items: {
+          type: 'object',
+          properties: {
+            id: { type: 'string' },
+            name: { type: 'string' },
+          },
+        },
+      },
     },
   })
   user: any;
+}
+
+export class SigninDto {
+  @ApiProperty({ example: 'john.doe' })
+  @IsString()
+  @IsNotEmpty()
+  username: string;
+
+  @ApiProperty({ example: 'password123' })
+  @IsString()
+  @IsNotEmpty()
+  password: string;
+}
+
+export class SignupDto {
+  @ApiProperty({ example: 'john.doe' })
+  @IsString()
+  @IsNotEmpty()
+  username: string;
+
+  @ApiProperty({ example: 'password123' })
+  @IsString()
+  @IsNotEmpty()
+  password: string;
+
+  @ApiProperty({ example: 'john@example.com' })
+  @IsEmail()
+  @IsNotEmpty()
+  email: string;
+
+  @ApiPropertyOptional({ example: 'John' })
+  @IsString()
+  @IsOptional()
+  firstName?: string;
+
+  @ApiPropertyOptional({ example: 'Doe' })
+  @IsString()
+  @IsOptional()
+  lastName?: string;
+
+  @ApiPropertyOptional({ description: 'Tenant ID to join' })
+  @IsUUID()
+  @IsOptional()
+  tenantId?: string;
+}
+
+export class MSSignInDto {
+  @ApiProperty()
+  @IsString()
+  @IsNotEmpty()
+  code: string;
 }

@@ -13,7 +13,6 @@ console.log('ENV', ENV);
 console.log('databaseConfig', databaseConfig);
 console.log('Database name', process.env.DB_NAME);
 console.log('Database username', process.env.DB_USERNAME);
-console.log('Database password', process.env.DB_PASSWORD);
 console.log('Database host', process.env.DB_HOST);
 console.log('Database port', process.env.DB_PORT);
 
@@ -40,7 +39,6 @@ async function testConnection() {
 
 @Module({
   imports: [TypeOrmModule.forRoot(databaseConfig), AccessModule, ManagerModule],
-  controllers: [AccountController],
   providers: [
     {
       provide: APP_INTERCEPTOR,

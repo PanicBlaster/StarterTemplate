@@ -4,9 +4,9 @@ import { Repository } from 'typeorm';
 import { JwtService } from '@nestjs/jwt';
 import { UserAccess } from '../user-access.service';
 import { User } from '../../entities/user.entity';
-import { TenantAccess } from '../tenant-access.service';
 import { UnauthorizedException, NotFoundException } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
+import { TenantAccess } from '../tenant-access.service';
 
 describe('UserAccess', () => {
   let service: UserAccess;
