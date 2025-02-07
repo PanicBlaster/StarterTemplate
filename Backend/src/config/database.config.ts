@@ -7,7 +7,7 @@ export const databaseConfig: TypeOrmModuleOptions = {
   port: parseInt(process.env.DB_PORT) || 5432,
   username: process.env.DB_USERNAME || 'postgres',
   password: process.env.DB_PASSWORD || 'postgres',
-  database: process.env.DB_NAME || 'dontpanictemplate',
+  database: process.env.DB_NAME || 'startertemplate',
   entities: [User, Tenant],
   synchronize: true,
   logging: true,

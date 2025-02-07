@@ -139,6 +139,7 @@ The project follows a layered architecture:
    - Contains database entities and their relationships
    - Provides services for CRUD operations
    - Implements business rules and validations
+   - All access services must be added to the access module.
 
 2. **Manager Layer** (`src/manager/`)
 
@@ -147,11 +148,17 @@ The project follows a layered architecture:
    - Implements REST API endpoints
    - Provides Swagger documentation
    - Handles input validation and error responses
+   - All managers must be added to the managers module.
 
 3. **Common Layer** (`src/common/`)
+
    - Contains shared code and utilities
    - Defines common DTOs and interfaces
    - Implements cross-cutting concerns
+
+4. **Config Layer** (`src/config/`)
+   - Database configuration
+   - All entities must be added to the config module.
 
 ### Key Features
 
@@ -171,6 +178,22 @@ For detailed API call chains and data flows, see [CALLCHAINS.md](CALLCHAINS.md).
 Tenant Id can be passed in the header or in the body. If it is passed in the body, it must match the tenant id in the header. Query options should be passed thru query (QueryOptionsDto) object.
 
 Examples below assume we are building a multi-tenant application. Tenant related information could be removed if we are building a single-tenant application.
+
+## Manager Module
+
+```typescript
+@Module({
+  imports: [
+    AccessModule,
+    JwtModule.register({
+      secret: process.env.JWT_SECRET || 'your-secret-key',
+      signOptions: { expiresIn: '30d' },
+    }),
+    HttpModule,
+  ],
+  controllers: [AccountController, AuthController, TenantController, NewManagerController],
+})
+```
 
 ## REST API Call Guidelines
 
