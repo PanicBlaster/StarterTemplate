@@ -61,7 +61,7 @@ $ npm run test:cov
 
 Mac/Linux
 
-```
+```bash
 sudo kill $(lsof -t -i:3001)
 ```
 
@@ -108,28 +108,24 @@ http://localhost:3001/api-docs
 
 ```
 src/
-├── access/                 # Data access layer
-│   ├── entities/          # Database entities
+├── access/                           # Data access layer
+│   ├── entities/                     # Database entities
 │   │   ├── tenant.entity.ts
-│   │   ├── project.entity.ts
-│   │   ├── environment.entity.ts
 │   │   ├── user.entity.ts
-│   │   ├── pull-request.entity.ts
-│   │   └── system-settings.entity.ts
-│   └── services/          # Data access services
+│   └── services/                     # Data access services
 │       ├── tenant-access.service.ts
-│       ├── project-access.service.ts
 │       ├── user-access.service.ts
-│       └── system-settings-access.service.ts
-├── manager/               # API Controllers layer
+├── manager/                          # API Controllers layer
 │   ├── account.controller.ts
-│   ├── tenant.controller.ts
-│   ├── project.controller.ts
-│   └── system-settings.controller.ts
-├── common/               # Shared code
-│   └── dto/             # Data Transfer Objects
+│   ├── auth.controller.ts
+├── common/                           # Shared code
+│   └── dto/                          # Data Transfer Objects
 │       └── pagination.dto.ts
-└── config/              # Configuration
+│       └── query.dto.ts
+│       └── auth.dto.ts
+│       └── tenant.dto.ts
+│       └── user.dto.ts
+└── config/                           # Configuration
     └── database.config.ts
 ```
 
@@ -170,18 +166,33 @@ The project follows a layered architecture:
 
 For detailed API call chains and data flows, see [CALLCHAINS.md](CALLCHAINS.md).
 
-## Tenant and headers
+# Controller/Manager HTTP Call Guidelines
 
-Tenant Id can be passed in the header or in the body. If it is passed in the body, it must match the tenant id in the header.
+Tenant Id can be passed in the header or in the body. If it is passed in the body, it must match the tenant id in the header. Query options should be passed thru query (QueryOptionsDto) object.
+
+Examples below assume we are building a multi-tenant application. Tenant related information could be removed if we are building a single-tenant application.
+
+## REST API Call Guidelines
+
+If we are implementing a REST Style API use standard REST guidelines.
+
+- Retrieve a single item: GET /api/v1/items/:id
+- Retrieve a list of items: GET /api/v1/items
+- Create an item: POST /api/v1/items
+- Update an item: PUT /api/v1/items/:id
+
+## List/FindAll/Query
 
 If we are in a findAll type call, we should see if the tenantId is passed in the header and if it is, we should add it to the query.
 
-FindAll example:
+Query includes pagination, sorting, and filtering.
 
-```
+Query example:
+
+```typescript
   @Get()
   @ApiOperation({ summary: 'Get all clients' })
-  async findAll(
+  async queryClients(
     @Query(ValidationPipe) query: QueryOptionsDto,
     @Headers('X-Tenant-ID') tenantId?: string
   ) {
@@ -204,20 +215,22 @@ FindAll example:
   }
 ```
 
-If we are implementing a findOne type call, we should see if the tenantId is passed in the header and if it is, we should add it to the query.
+## FindOne
+
+If we are implementing a findOne type call, we should see if the tenantId is passed in the header and if it is, we should add it to the query. In general name these for the item type we are looking up. So a find one for a client would be findOneClient.
 
 FindOne example:
 
-```
+```typescript
   @Get(':id')
   @ApiOperation({ summary: 'Get a client by id' })
-  async findOne(
+  async findOneClient(
     @Headers('X-Tenant-ID') tenantId: string,
     @Param('id') id: string
   ) {
     this.validateTenantId(tenantId);
 
-    const client = await this.clientAccess.find(id);
+    const client = await this.clientAccess.findOneClient(id);
     if (client.tenantId !== tenantId) {
       throw new NotFoundException('Client not found');
     }
@@ -225,11 +238,15 @@ FindOne example:
   }
 ```
 
+## Create
+
 If we are implementing a create type call, we should see if the tenantId is passed in the header and if it is, we should add it to the body.
+
+Create should return the id of the created item.
 
 Create example:
 
-```
+```typescript
   @Post()
   @ApiOperation({ summary: 'Create a new client' })
   async create(
@@ -247,15 +264,19 @@ Create example:
         );
       }
   }
-  return this.clientAccess.upsert(data);
+  return this.clientAccess.upsertClient(data);
 }
 ```
 
 If we are implementing an update type call, we should see if the tenantId is passed in the header and if it is, we should add it to the body.
 
+## Update
+
+Update should return the id of the updated item.
+
 Update example:
 
-```
+```typescript
   @Put(':id')
   @ApiOperation({ summary: 'Update a client' })
   async update(
@@ -276,85 +297,151 @@ Update example:
       }
     }
 
-    const client = await this.clientAccess.find(id);
+    const client = await this.clientAccess.findOneClient(id);
     if (client.tenantId !== tenantId) {
       throw new NotFoundException('Client not found');
     }
 
-    return this.clientAccess.upsert(data, id);
+    return this.clientAccess.upsertClient(data, id);
   }
 ```
 
-## Data Access example
+# Data Access
 
-Upsert example:
+Typical data access will should use similar methods, with similar naming. All data access should be in the access layer. The entity objects should NEVER be exposed, we should always return a DTO (common/dto) object.
 
+## Upsert Example
+
+Upsert should not return anything.
+
+```typescript
+async upsertClient(data: clientDto, id?: string): Promise<string> {
+  if (id) {
+    await this.findOneClient(id); // Verify exists
+  }
+
+  if (data.tenantId) {
+    await this.tenantAccess.findOneTenant(data.tenantId); // Verify tenant exists
+  }
+
+  const client = id
+    ? await this.clientRepository.preload({ id, ...data })
+    : this.clientRepository.create(data);
+
+  const savedClient = await this.clientRepository.save(client);
+
+  return savedClient.id;
+}
 ```
-  async upsert(data: CreateClientDto | UpdateClientDto, id?: string) {
-    if (id) {
-      await this.find(id); // Verify exists
-    }
 
-    if (data.tenantId) {
-      await this.tenantAccess.find(data.tenantId); // Verify tenant exists
-    }
+## Find One Example
 
-    const client = id
-      ? await this.clientRepository.preload({ id, ...data })
-      : this.clientRepository.create(data);
+```typescript
+  async findOneUser(
+    options: QueryOptionsDto
+  ): Promise<QueryResultItem<User> | null> {
+    const user = await this.userRepository.findOne({
+      where: { id: options.id },
+      relations: ['tenants'],
+    });
 
-    return this.clientRepository.save(client);
+    if (!user) return null;
+
+    return {
+      item: user,
+      id: user.id,
+    };
   }
 ```
 
-## Backend Hosting as Service (LiteNode)
+## Query Example
 
-Backend is run as a service on the VM. Backend node confiruration will be handled by the hosting-node-access service.
+```typescript
+  async queryUsers(options: QueryOptionsDto): Promise<QueryResult<User>> {
+    const [items, total] = await this.userRepository.findAndCount({
+      take: options.take || 10,
+      skip: options.skip || 0,
+      where: options.where || {},
+      order: options.order || { createdAt: 'DESC' },
+      relations: ['tenants'],
+    });
 
-Template for the service is in VM_SETUP.md, also provided here. These files are located at /etc/systemd/system/. Example below would be for the host_cattle_qa service. /etc/systemd/system/host_cattle_qa.service
-
-```
-[Unit]
-Description=host cattle qa
-After=network.target
-
-[Service]
-# The user and group under which the service will run
-User=cattle_qa
-Group=cattle_qa
-
-# Specify the working directory where your NestJS app resides
-WorkingDirectory=/home/cattle_qa/Backend
-
-# Command to run the NestJS app with nodemon
-ExecStart=nodemon main.js
-EnvironmentFile=/etc/systemd/system/cattle_qa.env
-
-# Restart the service if it crashes
-Restart=always
-
-# Allow the process to write to the log file
-StandardOutput=append:/home/cattle_qa/logs/host_cattle_qa.log
-StandardError=append:/home/cattle_qa/logs/host_cattle_qa_error.log
-
-# Optional: Increase the timeout if your app needs more time to start
-TimeoutSec=300
-
-[Install]
-WantedBy=multi-user.target
+    return {
+      items: items.map((item) => ({
+        item,
+        id: item.id,
+      })),
+      total,
+      take: options.take || 10,
+      skip: options.skip || 0,
+    };
+  }
 ```
 
-Each service will have an environment file. The environment file will be located at /etc/systemd/system/project_environment.env. Sample contents of that file are below.
+# DTOs
 
-```
-NODE_ENV=production
-PORT=3015
-DB_USERNAME=cattle_qa
-DB_PASSWORD=ABCD1234
-DB_NAME=cattle_qa
+DTOs are located in src/common/dto. They are used to transfer data between the controller and the access layer. They are also used to validate data passed in the body of a request.
+
+## Ids
+
+Ids should be strings, which are UUIDs.
+
+DTO objects should not include the Id. Ids should be separate from the DTO. For example a client DTO should look like the following. All upsert calls should include an id parameter, and all upsert calls should return the id of the created or updated item.
+
+```typescript
+export class ClientDto {
+  @ApiProperty({ description: 'The name of the client' })
+  name: string;
+}
 ```
 
-## Backend Hosting as Docker (DockerNode)
+The Id should be passed in as a parameter to the upsert method.
+
+```typescript
+async upsertClient(data: clientDto, id?: string) {
+```
+
+If we are returning a single item, we should return the DTO object. Example below would be returning a ClientDTO.
+
+```typescript
+return this.clientAccess.findOneClient(id);
+```
+
+If we are returning a list of items, we should return a list of DTO objects. Example below would be returning a list of ClientDTOs.
+
+```typescript
+return this.clientAccess.queryClients(queryOptions);
+```
+
+When returning a list of items we should wrap the DTO object in a QueryResult object.
+
+```typescript
+return {
+  items: items.map((item) => ({
+    item: item,
+    id: item.id,
+  })),
+  total: items.length,
+  take: queryOptions.take,
+  skip: queryOptions.skip,
+};
+```
+
+QueryResult is defined in src/common/dto/query.dto.ts.
+
+```typescript
+export interface QueryResultItem<T> {
+  item: T;
+  id: string;
+}
+
+export interface QueryResult<T> {
+  items: QueryResultItem<T>[];
+  total: number;
+  take: number;
+  skip: number;
+}
+```
 
 ---
 

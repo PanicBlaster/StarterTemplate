@@ -3,16 +3,21 @@ import {
   Post,
   Body,
   ValidationPipe,
-  Logger,
   UnauthorizedException,
+  Logger,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { UserAccess } from '../access/services/user-access.service';
-import { TenantAccess } from '../access/services/tenant-access.service';
+import {
+  LoginDto,
+  SignupDto,
+  AuthResponse,
+  AuthResponseDto,
+  MSSignInDto,
+} from '../common/dto/auth.dto';
+import { firstValueFrom } from 'rxjs/internal/firstValueFrom';
 import { HttpService } from '@nestjs/axios';
-import { firstValueFrom } from 'rxjs';
-import { AuthResponse, MSSignInDto, SignupDto } from '../common/dto/auth.dto';
-import { SigninDto } from './auth.dto';
+import { TenantAccess } from 'src/access/services/tenant-access.service';
 
 @ApiTags('auth')
 @Controller('api/auth')
@@ -21,27 +26,41 @@ export class AuthController {
 
   constructor(
     private readonly userAccess: UserAccess,
-    private readonly tenantAccess: TenantAccess,
-    private readonly httpService: HttpService
+    private readonly httpService: HttpService,
+    private readonly tenantAccess: TenantAccess
   ) {}
 
-  @Post('signin')
-  @ApiOperation({ summary: 'Authenticate user' })
-  @ApiResponse({ status: 200, description: 'Sign in successful' })
-  async signin(
-    @Body(ValidationPipe) loginDto: SigninDto
-  ): Promise<AuthResponse> {
-    return this.userAccess.verifyAuth(loginDto.username, loginDto.password);
+  @Post('login')
+  @ApiOperation({ summary: 'Login user' })
+  @ApiResponse({
+    status: 200,
+    description: 'Login successful',
+    type: AuthResponseDto,
+  })
+  @ApiResponse({ status: 401, description: 'Invalid credentials' })
+  async login(@Body(ValidationPipe) loginDto: LoginDto): Promise<AuthResponse> {
+    try {
+      return await this.userAccess.verifyAuth(
+        loginDto.username,
+        loginDto.password
+      );
+    } catch (error) {
+      throw new UnauthorizedException('Invalid credentials');
+    }
   }
 
   @Post('signup')
-  @ApiOperation({ summary: 'Create new account' })
-  @ApiResponse({ status: 201, description: 'Account created successfully' })
+  @ApiOperation({ summary: 'Register new user' })
+  @ApiResponse({
+    status: 201,
+    description: 'User created successfully',
+    type: AuthResponseDto,
+  })
   async signup(
     @Body(ValidationPipe) signupDto: SignupDto
   ): Promise<AuthResponse> {
-    const user = await this.userAccess.upsert(signupDto);
-    return this.userAccess.verifyAuth(user.username, signupDto.password);
+    await this.userAccess.upsertUser(signupDto);
+    return this.userAccess.verifyAuth(signupDto.username, signupDto.password);
   }
 
   @Post('signinWithMS')
@@ -85,23 +104,32 @@ export class AuthController {
 
       // Find or create user
       this.logger.log('find/creating user ' + msUser.mail);
-      let user = await this.userAccess.findByEmail(msUser.mail);
+      let user = await this.userAccess.findOneUser({
+        where: { email: msUser.mail },
+      });
 
       let tenantId = '';
       if (msUser.mail.endsWith('@dontpaniclabs.com')) {
-        this.logger.log('Creating Dpl tenant');
-        let tenant = await this.tenantAccess.findByName('Dpl');
-        if (!tenant) {
-          tenant = await this.tenantAccess.upsert({
-            name: 'Dpl',
-          });
+        this.logger.log('Is there a Dpl tenant?');
+        let tenant = await this.tenantAccess.findOneTenant({
+          where: { name: 'Dpl' },
+        });
+        if (tenant) {
           tenantId = tenant.id;
         }
       }
 
+      if (tenantId === '' || !tenantId) {
+        this.logger.log('No tenant found, creating a default one');
+        tenantId = await this.tenantAccess.upsertTenant({
+          name: 'Default',
+        });
+      }
+
+      let userId = '';
       if (!user) {
         this.logger.log('Creating user ' + msUser.mail);
-        user = await this.userAccess.upsert({
+        userId = await this.userAccess.upsertUser({
           username: msUser.mail,
           email: msUser.mail,
           firstName: msUser.givenName,
@@ -114,9 +142,9 @@ export class AuthController {
         });
       }
 
-      this.logger.log(`User ${user.username} signed in with Microsoft`);
+      this.logger.log(`User ${msUser.mail} signed in with Microsoft`);
 
-      return this.userAccess.authForExternal(user.username);
+      return this.userAccess.authForExternal(msUser.mail);
     } catch (error) {
       this.logger.error(`Microsoft signin failed: ${error.message}`);
       throw new UnauthorizedException('Microsoft authentication failed');

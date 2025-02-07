@@ -22,10 +22,9 @@ export interface AuthResponse {
   user: {
     id: string;
     username: string;
-    first_name: string;
-    last_name: string;
+    firstName: string;
+    lastName: string;
     email: string;
-    phone: string;
     role: string;
     tenants: TenantInfo[];
   };

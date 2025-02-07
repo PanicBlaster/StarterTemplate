@@ -75,7 +75,7 @@ export class AccountController {
   ) {
     const tenantId = query.tenantId || headerTenantId;
 
-    return this.userAccess.findAll({
+    return this.userAccess.queryUsers({
       take: query.take,
       skip: query.skip,
       where: tenantId ? { tenants: { id: tenantId } } : query.where,
@@ -89,7 +89,7 @@ export class AccountController {
   @ApiResponse({ status: 200, description: 'Account found' })
   @ApiResponse({ status: 404, description: 'Account not found' })
   async findOne(@Param('id') id: string) {
-    const user = await this.userAccess.find(id);
+    const user = await this.userAccess.findOneUser({ id });
     if (!user) {
       throw new NotFoundException(`Account with ID ${id} not found`);
     }
@@ -100,7 +100,7 @@ export class AccountController {
   @ApiOperation({ summary: 'Create a new account' })
   @ApiResponse({ status: 201, description: 'Account created successfully' })
   async create(@Body(ValidationPipe) createAccountDto: CreateAccountDto) {
-    return this.userAccess.upsert(createAccountDto);
+    return this.userAccess.upsertUser(createAccountDto);
   }
 
   @Put(':id')
@@ -113,7 +113,7 @@ export class AccountController {
     @Body(ValidationPipe) updateAccountDto: UpdateAccountDto
   ) {
     try {
-      return await this.userAccess.upsert(updateAccountDto, id);
+      return await this.userAccess.upsertUser(updateAccountDto, id);
     } catch {
       throw new NotFoundException(`Account with ID ${id} not found`);
     }
@@ -142,7 +142,7 @@ export class AccountController {
       );
     }
 
-    const user = await this.userAccess.find(data.userId);
+    const user = await this.userAccess.findOneUser({ id: data.userId });
     if (!user) {
       throw new NotFoundException(`User with ID ${data.userId} not found`);
     }

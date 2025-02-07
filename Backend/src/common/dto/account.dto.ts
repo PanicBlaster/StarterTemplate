@@ -23,10 +23,29 @@ export class CreateAccountDto {
   @IsNotEmpty()
   email: string;
 
-  @ApiProperty({ example: 'John Doe' })
+  @ApiProperty({ example: 'John' })
   @IsString()
   @IsNotEmpty()
-  fullName: string;
+  firstName: string;
+
+  @ApiProperty({ example: 'Doe' })
+  @IsString()
+  @IsNotEmpty()
+  lastName: string;
+
+  @ApiProperty({ example: 'LOCAL' })
+  @IsString()
+  @IsOptional()
+  source?: string;
+
+  @ApiProperty({ example: 'user' })
+  @IsString()
+  @IsOptional()
+  role?: string;
+
+  @IsUUID()
+  @IsOptional()
+  tenantId?: string;
 }
 
 export class UpdateAccountDto {
@@ -44,6 +63,20 @@ export class UpdateAccountDto {
   @IsString()
   @IsOptional()
   password?: string;
+
+  @ApiProperty({ example: 'LOCAL' })
+  @IsString()
+  @IsOptional()
+  source?: string;
+
+  @ApiProperty({ example: 'user' })
+  @IsString()
+  @IsOptional()
+  role?: string;
+
+  @IsUUID()
+  @IsOptional()
+  tenantId?: string;
 }
 
 export class AccountQueryDto {
@@ -75,63 +108,4 @@ export class ChangePasswordDto {
   @IsString()
   @IsNotEmpty()
   newPassword: string;
-}
-
-export class CreateUserDto {
-  @IsString()
-  @IsNotEmpty()
-  username: string;
-
-  @IsString()
-  @IsNotEmpty()
-  password: string;
-
-  @IsString()
-  @IsNotEmpty()
-  firstName: string;
-
-  @IsString()
-  @IsNotEmpty()
-  lastName: string;
-
-  @IsEmail()
-  email: string;
-
-  @IsString()
-  @IsOptional()
-  phone?: string;
-
-  @IsString()
-  @IsNotEmpty()
-  role: string;
-}
-
-export class UpdateUserDto {
-  @IsString()
-  @IsOptional()
-  username?: string;
-
-  @IsString()
-  @IsOptional()
-  password?: string;
-
-  @IsString()
-  @IsOptional()
-  firstName?: string;
-
-  @IsString()
-  @IsOptional()
-  lastName?: string;
-
-  @IsEmail()
-  @IsOptional()
-  email?: string;
-
-  @IsString()
-  @IsOptional()
-  phone?: string;
-
-  @IsString()
-  @IsOptional()
-  role?: string;
 }

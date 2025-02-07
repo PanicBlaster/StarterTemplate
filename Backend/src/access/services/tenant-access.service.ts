@@ -4,10 +4,10 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { v4 as uuidv4 } from 'uuid';
 import {
-  PaginationOptions,
-  PaginatedResult,
-} from '../../common/dto/pagination.dto';
-import { QueryOptionsDto, QueryResult } from '../../common/dto/query.dto';
+  QueryOptionsDto,
+  QueryResult,
+  QueryResultItem,
+} from '../../common/dto/query.dto';
 import { CreateTenantDto, UpdateTenantDto } from '../../common/dto/tenant.dto';
 import { Tenant } from '../entities/tenant.entity';
 
@@ -19,20 +19,36 @@ export class TenantAccess {
     private readonly httpService: HttpService
   ) {}
 
-  async find(id: string): Promise<Tenant | null> {
-    return this.tenantRepository.findOne({
-      where: { id },
+  async findOneTenant(
+    options: QueryOptionsDto
+  ): Promise<QueryResultItem<Tenant> | null> {
+    const tenant = await this.tenantRepository.findOne({
+      where: { id: options.id },
       relations: ['projects'],
     });
+
+    if (!tenant) return null;
+
+    return {
+      item: tenant,
+      id: tenant.id,
+    };
   }
 
-  async findByName(name: string): Promise<Tenant | null> {
-    return this.tenantRepository.findOne({
+  async findByName(name: string): Promise<QueryResultItem<Tenant> | null> {
+    const tenant = await this.tenantRepository.findOne({
       where: { name },
     });
+
+    if (!tenant) return null;
+
+    return {
+      item: tenant,
+      id: tenant.id,
+    };
   }
 
-  async findAll(options: QueryOptionsDto): Promise<QueryResult<Tenant>> {
+  async queryTenants(options: QueryOptionsDto): Promise<QueryResult<Tenant>> {
     const [items, total] = await this.tenantRepository.findAndCount({
       take: options.take || 10,
       skip: options.skip || 0,
@@ -41,40 +57,37 @@ export class TenantAccess {
     });
 
     return {
-      items,
+      items: items.map((item) => ({
+        item,
+        id: item.id,
+      })),
       total,
       take: options.take || 10,
       skip: options.skip || 0,
     };
   }
 
-  async upsert(
+  async upsertTenant(
     data: CreateTenantDto | UpdateTenantDto,
     id?: string
-  ): Promise<Tenant> {
+  ): Promise<string> {
     if (id) {
-      // For updates, first fetch existing tenant
-      const existingTenant = await this.find(id);
+      const existingTenant = await this.findOneTenant({ id });
       if (!existingTenant) {
         throw new NotFoundException('Tenant not found');
       }
-
-      // Create update data without relations
-      const updateData = {
-        ...existingTenant,
-        ...data,
-        id, // Ensure ID is preserved
-      };
-
-      return this.tenantRepository.save(updateData);
     }
 
-    // For create, just create new entity
-    const tenant = this.tenantRepository.create({
-      id: uuidv4(),
-      ...data,
-    });
-    return this.tenantRepository.save(tenant);
+    const tenant = id
+      ? await this.tenantRepository.preload({ id, ...data })
+      : this.tenantRepository.create({
+          id: uuidv4(),
+          ...data,
+        });
+
+    const savedTenant = await this.tenantRepository.save(tenant);
+
+    return savedTenant.id;
   }
 
   async validateTenantId(tenantId: string): Promise<boolean> {
@@ -82,15 +95,7 @@ export class TenantAccess {
       return false;
     }
 
-    const tenant = await this.find(tenantId);
+    const tenant = await this.findOneTenant({ id: tenantId });
     return !!tenant;
-  }
-
-  async findWithValidation(id: string): Promise<Tenant> {
-    const tenant = await this.find(id);
-    if (!tenant) {
-      throw new NotFoundException(`Tenant with ID ${id} not found`);
-    }
-    return tenant;
   }
 }

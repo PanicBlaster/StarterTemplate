@@ -3,6 +3,11 @@ import { Type } from 'class-transformer';
 import { ApiPropertyOptional } from '@nestjs/swagger';
 
 export class QueryOptionsDto {
+  @ApiPropertyOptional({ description: 'Id of the item to retrieve' })
+  @IsUUID()
+  @IsOptional()
+  id?: string;
+
   @ApiPropertyOptional({ description: 'Number of items to take' })
   @IsNumber()
   @IsOptional()
@@ -30,8 +35,13 @@ export class QueryOptionsDto {
   tenantId?: string;
 }
 
+export interface QueryResultItem<T> {
+  item: T;
+  id: string;
+}
+
 export interface QueryResult<T> {
-  items: T[];
+  items: QueryResultItem<T>[];
   total: number;
   take: number;
   skip: number;

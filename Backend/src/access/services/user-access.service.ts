@@ -22,77 +22,15 @@ import {
   IsUUID,
 } from 'class-validator';
 import { TenantAccess } from './tenant-access.service';
-import { QueryOptionsDto, QueryResult } from 'src/common/dto/query.dto';
-
-export class CreateUserDto {
-  @IsString()
-  @IsNotEmpty()
-  username: string;
-
-  @IsString()
-  @IsNotEmpty()
-  password: string;
-
-  @IsString()
-  @IsNotEmpty()
-  firstName: string;
-
-  @IsString()
-  @IsNotEmpty()
-  lastName: string;
-
-  @IsEmail()
-  email: string;
-
-  @IsString()
-  @IsOptional()
-  phone?: string;
-
-  @IsString()
-  @IsNotEmpty()
-  role: string;
-
-  @IsUUID()
-  tenantId: string;
-
-  @IsString()
-  @IsOptional()
-  source?: string;
-}
-
-export class UpdateUserDto {
-  @IsString()
-  @IsOptional()
-  username?: string;
-
-  @IsString()
-  @IsOptional()
-  password?: string;
-
-  @IsString()
-  @IsOptional()
-  firstName?: string;
-
-  @IsString()
-  @IsOptional()
-  lastName?: string;
-
-  @IsEmail()
-  @IsOptional()
-  email?: string;
-
-  @IsString()
-  @IsOptional()
-  phone?: string;
-
-  @IsString()
-  @IsOptional()
-  role?: string;
-
-  @IsUUID()
-  @IsOptional()
-  tenantId?: string;
-}
+import {
+  QueryOptionsDto,
+  QueryResult,
+  QueryResultItem,
+} from '../../common/dto/query.dto';
+import {
+  CreateAccountDto,
+  UpdateAccountDto,
+} from '../../common/dto/account.dto';
 
 @Injectable()
 export class UserAccess {
@@ -103,19 +41,23 @@ export class UserAccess {
     private readonly tenantAccess: TenantAccess
   ) {}
 
-  async find(id: string): Promise<User | null> {
-    const user = await this.userRepository.findOne({ where: { id } });
-    if (user) {
-      delete user.passwordHash;
-    }
-    return user;
+  async findOneUser(
+    options: QueryOptionsDto
+  ): Promise<QueryResultItem<User> | null> {
+    const user = await this.userRepository.findOne({
+      where: { id: options.id },
+      relations: ['tenants'],
+    });
+
+    if (!user) return null;
+
+    return {
+      item: user,
+      id: user.id,
+    };
   }
 
-  async findByUsername(username: string): Promise<User | null> {
-    return this.userRepository.findOne({ where: { username } });
-  }
-
-  async findAll(options: QueryOptionsDto): Promise<QueryResult<User>> {
+  async queryUsers(options: QueryOptionsDto): Promise<QueryResult<User>> {
     const [items, total] = await this.userRepository.findAndCount({
       take: options.take || 10,
       skip: options.skip || 0,
@@ -124,53 +66,44 @@ export class UserAccess {
       relations: ['tenants'],
     });
 
-    // Remove password hashes from response
-    items.forEach((user) => delete user.passwordHash);
-
     return {
-      items,
+      items: items.map((item) => ({
+        item,
+        id: item.id,
+      })),
       total,
       take: options.take || 10,
       skip: options.skip || 0,
     };
   }
 
-  async upsert(
-    data: CreateUserDto | UpdateUserDto,
+  async upsertUser(
+    data: CreateAccountDto | UpdateAccountDto,
     id?: string
-  ): Promise<User> {
+  ): Promise<string> {
     if (id) {
-      await this.find(id);
+      const existingUser = await this.findOneUser({ id });
+      if (!existingUser) {
+        throw new NotFoundException('User not found');
+      }
     }
 
-    if ('tenantId' in data) {
-      await this.tenantAccess.find(data.tenantId);
+    if (data.password) {
+      data.password = await bcrypt.hash(data.password, 10);
     }
 
-    // Create data object without password
-    const { password, ...restData } = data;
-
-    // Create base user object
     const user = id
-      ? await this.userRepository.preload({ id, ...restData })
-      : this.userRepository.create(restData);
-
-    // Hash password if provided
-    if (password) {
-      user.passwordHash = await this.hashPassword(password);
-    }
+      ? await this.userRepository.preload({ id, ...data })
+      : this.userRepository.create({ id: uuidv4(), ...data });
 
     const savedUser = await this.userRepository.save(user);
-    delete savedUser.passwordHash; // Remove hash before returning
-    return savedUser;
+
+    return savedUser.id;
   }
 
-  async verifyAuth(
-    usernameOrEmail: string,
-    password: string
-  ): Promise<AuthResponse> {
+  async verifyAuth(username: string, password: string): Promise<AuthResponse> {
     const user = await this.userRepository.findOne({
-      where: [{ username: usernameOrEmail }, { email: usernameOrEmail }],
+      where: { username },
       relations: ['tenants'],
     });
 
@@ -180,31 +113,24 @@ export class UserAccess {
 
     const isPasswordValid = await bcrypt.compare(password, user.passwordHash);
     if (!isPasswordValid) {
-      if (password !== user.passwordHash) {
-        throw new UnauthorizedException('Invalid credentials');
-      }
+      throw new UnauthorizedException('Invalid credentials');
     }
 
-    const payload: JwtPayload = {
-      userId: user.id,
+    const userDto = {
+      id: user.id,
       username: user.username,
+      firstName: user.firstName,
+      lastName: user.firstName,
+      email: user.email,
+      role: user.role,
+      tenants: user.tenants,
     };
 
-    const accessToken = this.jwtService.sign(payload);
+    const token = this.jwtService.sign({ userId: user.id });
 
-    delete user.passwordHash;
     return {
-      accessToken,
-      user: {
-        id: user.id,
-        username: user.username,
-        first_name: user.firstName,
-        last_name: user.lastName,
-        email: user.email,
-        phone: user.phone || '',
-        role: user.role,
-        tenants: user.tenants.map((t) => ({ id: t.id, name: t.name })),
-      },
+      accessToken: token,
+      user: userDto,
     };
   }
 
@@ -221,14 +147,9 @@ export class UserAccess {
     return this.verifyAuth(user.username, user.passwordHash);
   }
 
-  private async hashPassword(password: string): Promise<string> {
-    const salt = await bcrypt.genSalt();
-    return bcrypt.hash(password, salt);
-  }
-
-  async delete(id: string): Promise<void> {
-    const user = await this.find(id);
-    await this.userRepository.remove(user);
+  async delete(options: QueryOptionsDto): Promise<void> {
+    const user = await this.findOneUser(options);
+    await this.userRepository.remove(user.item);
   }
 
   async addToTenant(userId: string, tenantId: string): Promise<void> {
@@ -240,7 +161,7 @@ export class UserAccess {
       throw new NotFoundException('User not found');
     }
 
-    const tenant = await this.tenantAccess.find(tenantId);
+    const tenant = await this.tenantAccess.findOneTenant({ id: tenantId });
     if (!tenant) {
       throw new NotFoundException('Tenant not found');
     }
@@ -251,7 +172,7 @@ export class UserAccess {
 
     // Check if user is already in tenant
     if (!user.tenants.some((t) => t.id === tenantId)) {
-      user.tenants.push(tenant);
+      user.tenants.push(tenant.item);
       await this.userRepository.save(user);
     }
   }
@@ -274,19 +195,7 @@ export class UserAccess {
       throw new UnauthorizedException('Current password is incorrect');
     }
 
-    user.passwordHash = await this.hashPassword(newPassword);
+    user.passwordHash = await bcrypt.hash(newPassword, 10);
     await this.userRepository.save(user);
-  }
-
-  async create(data: CreateUserDto): Promise<User> {
-    const user = this.userRepository.create({
-      ...data,
-      source: data.source || 'LOCAL',
-    });
-    return this.userRepository.save(user);
-  }
-
-  async findByEmail(email: string): Promise<User | null> {
-    return this.userRepository.findOne({ where: { email } });
   }
 }
