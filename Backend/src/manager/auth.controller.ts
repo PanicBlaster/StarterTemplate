@@ -21,7 +21,7 @@ import { TenantAccess } from 'src/access/services/tenant-access.service';
 import { CreateAccountDto } from 'src/common/dto/account.dto';
 
 @ApiTags('auth')
-@Controller('api/auth')
+@Controller('api/v1/auth')
 export class AuthController {
   private readonly logger = new Logger(AuthController.name);
 

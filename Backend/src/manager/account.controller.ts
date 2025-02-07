@@ -50,7 +50,7 @@ import {
 } from '../common/dto/account.dto';
 
 @ApiTags('accounts')
-@Controller('api/account')
+@Controller('api/v1/account')
 @UseGuards(JwtAuthGuard)
 export class AccountController {
   private readonly logger = new Logger(AccountController.name);
