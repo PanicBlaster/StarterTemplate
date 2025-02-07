@@ -48,7 +48,6 @@ import {
   AddUserToTenantDto,
   ChangePasswordDto,
 } from '../common/dto/account.dto';
-import { LoginDto, SignupDto } from '../common/dto/auth.dto';
 
 @ApiTags('accounts')
 @Controller('api/account')

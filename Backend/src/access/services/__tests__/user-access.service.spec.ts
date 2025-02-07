@@ -7,7 +7,10 @@ import { User } from '../../entities/user.entity';
 import { UnauthorizedException, NotFoundException } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
 import { TenantAccess } from '../tenant-access.service';
-import { UpdateAccountDto } from '../../../common/dto/account.dto';
+import {
+  CreateAccountDto,
+  UpdateAccountDto,
+} from '../../../common/dto/account.dto';
 
 describe('UserAccess', () => {
   let service: UserAccess;
@@ -116,10 +119,12 @@ describe('UserAccess', () => {
 
   describe('upsertUser', () => {
     it('should create a new user and return id', async () => {
-      const createUserDto = {
+      const createUserDto: CreateAccountDto = {
         username: 'newuser',
         password: 'password123',
         email: 'new@example.com',
+        firstName: 'New',
+        lastName: 'User',
       };
 
       const savedUser = { ...mockUser, ...createUserDto, id: 'new-id' };
@@ -136,7 +141,6 @@ describe('UserAccess', () => {
     it('should update existing user and return id', async () => {
       const updateUserDto: UpdateAccountDto = {
         firstName: 'Updated',
-        lastName: 'Name',
       };
 
       mockUserRepository.findOne.mockResolvedValue(mockUser);

@@ -9,7 +9,7 @@ import {
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { UserAccess } from '../access/services/user-access.service';
 import {
-  LoginDto,
+  SigninDto,
   SignupDto,
   AuthResponse,
   AuthResponseDto,
@@ -18,6 +18,7 @@ import {
 import { firstValueFrom } from 'rxjs/internal/firstValueFrom';
 import { HttpService } from '@nestjs/axios';
 import { TenantAccess } from 'src/access/services/tenant-access.service';
+import { CreateAccountDto } from 'src/common/dto/account.dto';
 
 @ApiTags('auth')
 @Controller('api/auth')
@@ -38,7 +39,9 @@ export class AuthController {
     type: AuthResponseDto,
   })
   @ApiResponse({ status: 401, description: 'Invalid credentials' })
-  async login(@Body(ValidationPipe) loginDto: LoginDto): Promise<AuthResponse> {
+  async login(
+    @Body(ValidationPipe) loginDto: SigninDto
+  ): Promise<AuthResponse> {
     try {
       return await this.userAccess.verifyAuth(
         loginDto.username,
@@ -59,7 +62,17 @@ export class AuthController {
   async signup(
     @Body(ValidationPipe) signupDto: SignupDto
   ): Promise<AuthResponse> {
-    await this.userAccess.upsertUser(signupDto);
+    const createUserDto: CreateAccountDto = {
+      username: signupDto.username,
+      password: signupDto.password,
+      email: signupDto.email,
+      firstName: signupDto.firstName,
+      lastName: signupDto.lastName,
+      tenantId: signupDto.tenantId,
+      role: 'user',
+    };
+
+    await this.userAccess.upsertUser(createUserDto);
     return this.userAccess.verifyAuth(signupDto.username, signupDto.password);
   }
 
