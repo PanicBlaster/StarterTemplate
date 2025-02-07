@@ -8,11 +8,16 @@ import {
 } from 'class-validator';
 
 export class CreateTenantDto {
-  @ApiProperty({ example: 'Acme Corp' })
+  @ApiProperty({ description: 'Name of the tenant' })
   @IsString()
   @IsNotEmpty()
   name: string;
 
+  @ApiProperty({ description: 'Description of the tenant' })
+  @IsString()
+  @IsOptional()
+  description?: string;
+
   @ApiPropertyOptional({ description: 'Additional notes about the tenant' })
   @IsString()
   @IsOptional()
@@ -22,18 +27,19 @@ export class CreateTenantDto {
   @IsBoolean()
   @IsOptional()
   isActive?: boolean;
-
-  @IsOptional()
-  @IsString()
-  description?: string;
 }
 
 export class UpdateTenantDto {
-  @ApiPropertyOptional({ example: 'Acme Corp Updated' })
+  @ApiProperty({ description: 'Name of the tenant' })
   @IsString()
   @IsOptional()
   name?: string;
 
+  @ApiProperty({ description: 'Description of the tenant' })
+  @IsString()
+  @IsOptional()
+  description?: string;
+
   @ApiPropertyOptional({ description: 'Additional notes about the tenant' })
   @IsString()
   @IsOptional()
@@ -43,10 +49,6 @@ export class UpdateTenantDto {
   @IsBoolean()
   @IsOptional()
   isActive?: boolean;
-
-  @IsOptional()
-  @IsString()
-  description?: string;
 }
 
 export class TenantQueryDto {

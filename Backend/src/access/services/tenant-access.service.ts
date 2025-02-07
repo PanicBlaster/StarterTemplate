@@ -90,6 +90,10 @@ export class TenantAccess {
     return savedTenant.id;
   }
 
+  async removeTenant(options: QueryOptionsDto): Promise<void> {
+    await this.tenantRepository.delete(options.id);
+  }
+
   async validateTenantId(tenantId: string): Promise<boolean> {
     if (!tenantId) {
       return false;

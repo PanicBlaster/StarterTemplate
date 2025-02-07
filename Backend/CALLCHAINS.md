@@ -107,7 +107,7 @@ GET /api/client
 
 Each entity should support:
 
-- findAll (GET /api/[entity])
+- findAll/query (GET /api/[entity])
 - findOne (GET /api/[entity]/:id)
 - create (POST /api/[entity])
 - update (PUT /api/[entity]/:id)

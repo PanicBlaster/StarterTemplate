@@ -205,7 +205,7 @@ Query example:
       };
     }
 
-    return this.clientAccess.findAll({
+    return this.clientAccess.queryClients({
       ...query,
       where: {
         ...(query.where || {}),
@@ -230,7 +230,7 @@ FindOne example:
   ) {
     this.validateTenantId(tenantId);
 
-    const client = await this.clientAccess.findOneClient(id);
+    const client = await this.clientAccess.findOneClient({id});
     if (client.tenantId !== tenantId) {
       throw new NotFoundException('Client not found');
     }

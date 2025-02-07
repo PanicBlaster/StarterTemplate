@@ -4,7 +4,7 @@ import { AccountController } from './account.controller';
 import { JwtModule } from '@nestjs/jwt';
 import { HttpModule } from '@nestjs/axios';
 import { AuthController } from './auth.controller';
-
+import { TenantController } from './tenant.controller';
 @Module({
   imports: [
     AccessModule,
@@ -14,6 +14,6 @@ import { AuthController } from './auth.controller';
     }),
     HttpModule,
   ],
-  controllers: [AccountController, AuthController],
+  controllers: [AccountController, AuthController, TenantController],
 })
 export class ManagerModule {}
