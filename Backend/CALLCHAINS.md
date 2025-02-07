@@ -120,43 +120,59 @@ Each entity should support:
 
 ## Tenant Operations
 
-### Get All Tenants
+### Query Tenants
 
 ```
-GET /api/tenant
--> TenantController.findAll
--> TenantAccess.findAll
--> TenantRepository.findAndCount
+GET /api/v1/tenant
+-> TenantController.queryTenants
+-> TenantAccess.queryTenants
+-> Returns paginated tenant list
 ```
 
 ### Get Single Tenant
 
 ```
-GET /api/tenant/:id
--> TenantController.findOne
--> TenantAccess.find
--> TenantRepository.findOne
+GET /api/v1/tenant/:id
+-> TenantController.findOneTenant
+-> TenantAccess.findOneTenant
+-> Returns tenant or 404
 ```
 
 ### Create Tenant
 
 ```
-POST /api/tenant
+POST /api/v1/tenant
 -> TenantController.create
--> TenantAccess.upsert
--> TenantRepository.create
--> TenantRepository.save
+-> TenantAccess.upsertTenant
+-> Returns created tenant id
 ```
 
 ### Update Tenant
 
 ```
-PUT /api/tenant/:id
+PUT /api/v1/tenant/:id
 -> TenantController.update
--> TenantAccess.find
--> TenantAccess.upsert
--> TenantRepository.update
+-> TenantAccess.findOneTenant (verify exists)
+-> TenantAccess.upsertTenant
+-> Returns updated tenant id
 ```
+
+### Delete Tenant
+
+```
+DELETE /api/v1/tenant/:id
+-> TenantController.remove
+-> TenantAccess.findOneTenant (verify exists)
+-> TenantAccess.removeTenant
+-> Returns success
+```
+
+Note: All tenant operations:
+
+- Are protected by JwtAuthGuard
+- Validate X-Tenant-ID header when present
+- Return 400 for tenant ID mismatch
+- Return 404 for non-existent tenants
 
 ## Account Operations
 
