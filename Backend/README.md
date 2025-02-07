@@ -195,6 +195,14 @@ Examples below assume we are building a multi-tenant application. Tenant related
 })
 ```
 
+## Auth guard
+
+Managers should use the JwtAuthGuard to validate the JWT token.
+
+```
+import { JwtAuthGuard } from 'src/auth/jwt.guard';
+```
+
 ## REST API Call Guidelines
 
 If we are implementing a REST Style API use standard REST guidelines.
