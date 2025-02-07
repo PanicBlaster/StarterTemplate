@@ -57,7 +57,7 @@ import { Router } from '@angular/router';
             </div>
             <p-button
               label="Sign In"
-              (onClick)="login()"
+              (onClick)="signin()"
               [loading]="loading"
               styleClass="w-full"
             ></p-button>
@@ -102,16 +102,6 @@ import { Router } from '@angular/router';
                 type="text"
                 pInputText
                 [(ngModel)]="credentials.lastName"
-                class="w-full"
-              />
-            </div>
-            <div class="field">
-              <label for="phone">Phone</label>
-              <input
-                id="phone"
-                type="tel"
-                pInputText
-                [(ngModel)]="credentials.phone"
                 class="w-full"
               />
             </div>
@@ -171,12 +161,12 @@ export class AuthComponent {
     private messageService: MessageService
   ) {}
 
-  login() {
+  signin() {
     if (!this.credentials.username || !this.credentials.password) return;
 
     this.loading = true;
     this.authService
-      .login(this.credentials.username, this.credentials.password)
+      .signin(this.credentials.username, this.credentials.password)
       .subscribe({
         next: () => {
           this.messageService.add({

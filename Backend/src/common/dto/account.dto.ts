@@ -64,11 +64,6 @@ export class UpdateAccountDto {
   @IsOptional()
   lastName?: string;
 
-  @ApiPropertyOptional()
-  @IsString()
-  @IsOptional()
-  password?: string;
-
   @ApiProperty({ example: 'LOCAL' })
   @IsString()
   @IsOptional()

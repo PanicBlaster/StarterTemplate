@@ -1,17 +1,8 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject, Observable, tap } from 'rxjs';
-import { LoginResponse, TenantInfo } from './auth.interface';
-import { BackendService } from './backend.service';
 import { environment } from '../../environments/environment';
 import { HttpClient } from '@angular/common/http';
-
-interface Profile {
-  firstName: string | null;
-  lastName: string | null;
-  username: string | null;
-  email: string | null;
-  phone: string | null;
-}
+import { AuthResponse, Profile, TenantInfo } from '../dto/auth.dto';
 
 @Injectable({
   providedIn: 'root',
@@ -26,6 +17,9 @@ export class AuthService {
   private readonly PHONE_KEY = 'phone';
   private readonly ROLE_KEY = 'role';
   private readonly AVATAR_URL_KEY = 'avatar_url';
+  private readonly TENANTS_KEY = 'tenants';
+  private readonly TENANT_ID_KEY = 'tenant_id';
+  private readonly TENANT_NAME_KEY = 'tenant_name';
 
   private isAuthenticatedSubject = new BehaviorSubject<boolean>(
     this.hasValidToken()
@@ -43,9 +37,9 @@ export class AuthService {
     return !!localStorage.getItem(this.TOKEN_KEY);
   }
 
-  login(username: string, password: string): Observable<LoginResponse> {
+  signin(username: string, password: string): Observable<AuthResponse> {
     return this.http
-      .post<LoginResponse>(`${this.baseUrl}/account/login`, {
+      .post<AuthResponse>(`${this.baseUrl}/auth/signin`, {
         username,
         password,
       })
@@ -57,17 +51,26 @@ export class AuthService {
       );
   }
 
-  private setSession(response: LoginResponse) {
+  private setSession(response: AuthResponse) {
     localStorage.setItem(this.TOKEN_KEY, response.accessToken);
     localStorage.setItem(this.USER_ID_KEY, response.user.id);
     localStorage.setItem(this.USERNAME_KEY, response.user.username);
-    localStorage.setItem(this.FIRST_NAME_KEY, response.user.first_name);
-    localStorage.setItem(this.LAST_NAME_KEY, response.user.last_name);
+    localStorage.setItem(this.FIRST_NAME_KEY, response.user.firstName);
+    localStorage.setItem(this.LAST_NAME_KEY, response.user.lastName);
     localStorage.setItem(this.EMAIL_KEY, response.user.email);
-    localStorage.setItem(this.PHONE_KEY, response.user.phone);
     localStorage.setItem(this.ROLE_KEY, response.user.role);
 
     localStorage.setItem(this.AVATAR_URL_KEY, this.getAvatarUrl());
+
+    localStorage.setItem(
+      this.TENANTS_KEY,
+      JSON.stringify(response.user.tenants)
+    );
+
+    if (response.user.tenants.length > 0) {
+      localStorage.setItem(this.TENANT_ID_KEY, response.user.tenants[0].id);
+      localStorage.setItem(this.TENANT_NAME_KEY, response.user.tenants[0].name);
+    }
   }
 
   logout() {
@@ -100,9 +103,8 @@ export class AuthService {
     const lastName = localStorage.getItem(this.LAST_NAME_KEY);
     const username = localStorage.getItem(this.USERNAME_KEY);
     const email = localStorage.getItem(this.EMAIL_KEY);
-    const phone = localStorage.getItem(this.PHONE_KEY);
 
-    return { firstName, lastName, username, email, phone };
+    return { firstName, lastName, username, email };
   }
 
   getUserInitials(): string {
@@ -131,8 +133,26 @@ export class AuthService {
     lastName: string;
     phone?: string;
     tenantName: string;
-  }): Observable<void> {
-    return this.http.post<void>(`${this.baseUrl}/account/signup`, credentials);
+  }): Observable<AuthResponse> {
+    return this.http
+      .post<AuthResponse>(`${this.baseUrl}/auth/signup`, credentials)
+      .pipe(
+        tap((response) => {
+          this.setSession(response);
+          this.isAuthenticatedSubject.next(true);
+        })
+      );
+  }
+
+  selectTenant(tenant: TenantInfo) {
+    localStorage.setItem(this.TENANT_ID_KEY, tenant.id);
+    localStorage.setItem(this.TENANT_NAME_KEY, tenant.name);
+  }
+
+  getCurrentTenant(): TenantInfo | null {
+    const id = localStorage.getItem(this.TENANT_ID_KEY);
+    const name = localStorage.getItem(this.TENANT_NAME_KEY);
+    return id && name ? { id, name } : null;
   }
 
   getUserId(): string {

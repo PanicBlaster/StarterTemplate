@@ -10,6 +10,6 @@ export const authGuard = () => {
     return true;
   }
 
-  router.navigate(['/login']);
+  router.navigate(['/auth']);
   return false;
 };

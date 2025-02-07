@@ -11,7 +11,7 @@ import { SelectUserComponent } from './pages/users/select-user/select-user.compo
 import { NotificationsComponent } from './pages/notifications/notifications.component';
 
 export const routes: Routes = [
-  { path: 'login', component: AuthComponent },
+  { path: 'auth', component: AuthComponent },
   {
     path: 'home',
     component: HomeComponent,

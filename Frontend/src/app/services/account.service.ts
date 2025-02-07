@@ -54,7 +54,7 @@ export class AccountService {
   }
 
   getAllAccounts(): Observable<User[]> {
-    return this.http.get<User[]>(`${environment.apiUrl}/account`);
+    return this.backend.get<UserProfile>('account');
   }
 
   addUserToTenant(tenantId: string, userId: string): Observable<any> {

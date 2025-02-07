@@ -5,6 +5,7 @@ import {
   ValidationPipe,
   UnauthorizedException,
   Logger,
+  BadRequestException,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { UserAccess } from '../access/services/user-access.service';
@@ -31,15 +32,15 @@ export class AuthController {
     private readonly tenantAccess: TenantAccess
   ) {}
 
-  @Post('login')
-  @ApiOperation({ summary: 'Login user' })
+  @Post('signin')
+  @ApiOperation({ summary: 'Signin user' })
   @ApiResponse({
     status: 200,
     description: 'Login successful',
     type: AuthResponseDto,
   })
   @ApiResponse({ status: 401, description: 'Invalid credentials' })
-  async login(
+  async signin(
     @Body(ValidationPipe) loginDto: SigninDto
   ): Promise<AuthResponse> {
     try {
@@ -62,6 +63,22 @@ export class AuthController {
   async signup(
     @Body(ValidationPipe) signupDto: SignupDto
   ): Promise<AuthResponse> {
+    // check if user already exists by email
+    const user = await this.userAccess.findOneUser({
+      where: { email: signupDto.email },
+    });
+    if (user) {
+      throw new BadRequestException('User already exists');
+    }
+
+    // check if user already exists by username
+    const userByUsername = await this.userAccess.findOneUser({
+      where: { username: signupDto.username },
+    });
+    if (userByUsername) {
+      throw new BadRequestException('Username already exists');
+    }
+
     const createUserDto: CreateAccountDto = {
       username: signupDto.username,
       password: signupDto.password,

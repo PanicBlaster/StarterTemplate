@@ -86,10 +86,36 @@ export class UserAccess {
       if (!existingUser) {
         throw new NotFoundException('User not found');
       }
-    }
 
-    if (data.password) {
-      data.password = await bcrypt.hash(data.password, 10);
+      existingUser.item.firstName = (data as any).firstName;
+      existingUser.item.lastName = (data as any).lastName;
+      existingUser.item.source = 'LOCAL';
+      existingUser.item.role = 'user';
+      existingUser.item.tenants = [];
+      existingUser.item.updatedAt = new Date();
+
+      await this.userRepository.save(existingUser.item);
+    } else {
+      let passwordHash = undefined;
+      passwordHash = (data as any).password
+        ? await bcrypt.hash((data as any).password, 10)
+        : undefined;
+
+      const newUser = this.userRepository.create({
+        id: uuidv4(),
+        username: (data as any).username,
+        email: (data as any).email,
+        firstName: (data as any).firstName,
+        lastName: (data as any).lastName,
+        source: 'LOCAL',
+        role: 'user',
+        tenants: [],
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        passwordHash: passwordHash,
+      });
+      id = newUser.id;
+      await this.userRepository.save(newUser);
     }
 
     if (data.tenantId) {
@@ -98,16 +124,12 @@ export class UserAccess {
       });
       if (!tenant) {
         throw new NotFoundException('Tenant not found');
+      } else {
+        await this.addToTenant(id, tenant.item.id);
       }
     }
 
-    const user = id
-      ? await this.userRepository.preload({ id, ...data })
-      : this.userRepository.create({ id: uuidv4(), ...data });
-
-    const savedUser = await this.userRepository.save(user);
-
-    return savedUser.id;
+    return id;
   }
 
   async verifyAuth(username: string, password: string): Promise<AuthResponse> {

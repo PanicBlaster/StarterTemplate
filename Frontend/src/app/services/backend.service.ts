@@ -14,7 +14,10 @@ export class BackendService {
 
   private getHeaders(): HttpHeaders {
     let headers = new HttpHeaders();
-
+    const currentTenant = this.authService.getCurrentTenant();
+    if (currentTenant) {
+      headers = headers.set('X-Tenant-ID', currentTenant.id);
+    }
     const token = this.authService.getToken();
     if (token) {
       headers = headers.set('Authorization', `Bearer ${token}`);
