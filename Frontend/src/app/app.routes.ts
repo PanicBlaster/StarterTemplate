@@ -9,6 +9,7 @@ import { UserListComponent } from './pages/users/user-list/user-list.component';
 import { UserDetailComponent } from './pages/users/user-detail/user-detail.component';
 import { SelectUserComponent } from './pages/users/select-user/select-user.component';
 import { NotificationsComponent } from './pages/notifications/notifications.component';
+import { AuthMicrosoftComponent } from './pages/auth/auth-microsoft/auth-microsoft.component';
 
 export const routes: Routes = [
   { path: 'auth', component: AuthComponent },
@@ -32,4 +33,9 @@ export const routes: Routes = [
   },
 
   { path: '', redirectTo: '/home', pathMatch: 'full' },
+
+  {
+    path: 'authmicrosoft',
+    component: AuthMicrosoftComponent,
+  },
 ];

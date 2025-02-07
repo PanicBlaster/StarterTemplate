@@ -31,9 +31,6 @@ export class User {
   email: string;
 
   @Column({ nullable: true })
-  phone?: string;
-
-  @Column({ nullable: true })
   role?: string;
 
   @ManyToMany(() => Tenant)

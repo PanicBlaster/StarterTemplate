@@ -27,6 +27,9 @@ export class AuthService {
   isAuthenticated$ = this.isAuthenticatedSubject.asObservable();
 
   private baseUrl = environment.apiUrl;
+  // Add Microsoft OAuth configuration
+  private msRedirectUri = `${window.location.origin}/authmicrosoft`;
+  private msAuthEndpoint = `https://login.microsoftonline.com/${environment.microsoftTenantId}/oauth2/v2.0/authorize`;
 
   constructor(private http: HttpClient) {
     // Initialize authentication state
@@ -161,5 +164,28 @@ export class AuthService {
 
   handleUnauthorized() {
     this.logout(); // This will also set isAuthenticated to false
+  }
+
+  redirectToMicrosoftLogin() {
+    const params = new URLSearchParams({
+      client_id: environment.microsoftClientId,
+      response_type: 'code',
+      redirect_uri: this.msRedirectUri,
+      scope: 'openid profile email',
+      response_mode: 'query',
+    });
+
+    window.location.href = `${this.msAuthEndpoint}?${params.toString()}`;
+  }
+
+  loginWithMicrosoftCode(code: string): Observable<AuthResponse> {
+    return this.http
+      .post<AuthResponse>(`${this.baseUrl}/auth/signinWithMs`, { code })
+      .pipe(
+        tap((response) => {
+          this.setSession(response);
+          this.isAuthenticatedSubject.next(true);
+        })
+      );
   }
 }

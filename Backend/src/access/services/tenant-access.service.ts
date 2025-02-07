@@ -24,7 +24,6 @@ export class TenantAccess {
   ): Promise<QueryResultItem<Tenant> | null> {
     const tenant = await this.tenantRepository.findOne({
       where: { id: options.id },
-      relations: ['projects'],
     });
 
     if (!tenant) return null;

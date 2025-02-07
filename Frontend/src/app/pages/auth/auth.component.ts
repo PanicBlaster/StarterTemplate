@@ -61,6 +61,12 @@ import { Router } from '@angular/router';
               [loading]="loading"
               styleClass="w-full"
             ></p-button>
+            <p-button
+              label="Sign In with Microsoft"
+              (onClick)="loginWithMicrosoft()"
+              [loading]="loading"
+              styleClass="w-full"
+            ></p-button>
           </div>
 
           <!-- Signup Form -->
@@ -246,5 +252,9 @@ export class AuthComponent {
       return false;
     }
     return true;
+  }
+
+  loginWithMicrosoft() {
+    this.authService.redirectToMicrosoftLogin();
   }
 }
