@@ -92,6 +92,15 @@ export class UserAccess {
       data.password = await bcrypt.hash(data.password, 10);
     }
 
+    if (data.tenantId) {
+      const tenant = await this.tenantAccess.findOneTenant({
+        id: data.tenantId,
+      });
+      if (!tenant) {
+        throw new NotFoundException('Tenant not found');
+      }
+    }
+
     const user = id
       ? await this.userRepository.preload({ id, ...data })
       : this.userRepository.create({ id: uuidv4(), ...data });

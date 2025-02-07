@@ -7,6 +7,7 @@ import { User } from '../../entities/user.entity';
 import { UnauthorizedException, NotFoundException } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
 import { TenantAccess } from '../tenant-access.service';
+import { UpdateAccountDto } from '../../../common/dto/account.dto';
 
 describe('UserAccess', () => {
   let service: UserAccess;
@@ -14,12 +15,24 @@ describe('UserAccess', () => {
   let jwtService: JwtService;
   let tenantAccess: TenantAccess;
 
+  const mockUser = {
+    id: '1',
+    username: 'testuser',
+    passwordHash: 'hashedpassword123',
+    firstName: 'Test',
+    lastName: 'User',
+    email: 'test@example.com',
+    role: 'user',
+    tenants: [{ id: '1', name: 'Tenant1' }],
+  };
+
   const mockUserRepository = {
     findOne: jest.fn(),
     findAndCount: jest.fn(),
     create: jest.fn(),
     save: jest.fn(),
     remove: jest.fn(),
+    preload: jest.fn(),
   };
 
   const mockJwtService = {
@@ -27,7 +40,7 @@ describe('UserAccess', () => {
   };
 
   const mockTenantAccess = {
-    find: jest.fn(),
+    findOneTenant: jest.fn(),
   };
 
   beforeEach(async () => {
@@ -59,22 +72,101 @@ describe('UserAccess', () => {
     jest.clearAllMocks();
   });
 
-  describe('verifyAuth', () => {
-    it('should authenticate valid credentials', async () => {
-      const mockUser = {
-        id: '1',
-        username: 'testuser',
-        passwordHash: await bcrypt.hash('password123', 10),
-        firstName: 'Test',
-        lastName: 'User',
-        email: 'test@example.com',
-        tenants: [{ id: '1', name: 'Tenant1' }],
+  describe('findOneUser', () => {
+    it('should return a user by id', async () => {
+      mockUserRepository.findOne.mockResolvedValue(mockUser);
+      const result = await service.findOneUser({ id: mockUser.id });
+      expect(result).toEqual({
+        item: mockUser,
+        id: mockUser.id,
+      });
+      expect(userRepository.findOne).toHaveBeenCalledWith({
+        where: { id: mockUser.id },
+        relations: ['tenants'],
+      });
+    });
+
+    it('should return null if user not found', async () => {
+      mockUserRepository.findOne.mockResolvedValue(null);
+      const result = await service.findOneUser({ id: 'non-existent-id' });
+      expect(result).toBeNull();
+    });
+  });
+
+  describe('queryUsers', () => {
+    it('should return paginated users', async () => {
+      const mockUsers = [mockUser];
+      const mockTotal = 1;
+      mockUserRepository.findAndCount.mockResolvedValue([mockUsers, mockTotal]);
+
+      const options = { take: 10, skip: 0 };
+      const result = await service.queryUsers(options);
+
+      expect(result).toEqual({
+        items: mockUsers.map((item) => ({
+          item,
+          id: item.id,
+        })),
+        total: mockTotal,
+        take: 10,
+        skip: 0,
+      });
+    });
+  });
+
+  describe('upsertUser', () => {
+    it('should create a new user and return id', async () => {
+      const createUserDto = {
+        username: 'newuser',
+        password: 'password123',
+        email: 'new@example.com',
+      };
+
+      const savedUser = { ...mockUser, ...createUserDto, id: 'new-id' };
+      mockUserRepository.create.mockReturnValue(savedUser);
+      mockUserRepository.save.mockResolvedValue(savedUser);
+
+      const result = await service.upsertUser(createUserDto);
+
+      expect(result).toBe(savedUser.id);
+      expect(userRepository.create).toHaveBeenCalled();
+      expect(userRepository.save).toHaveBeenCalled();
+    });
+
+    it('should update existing user and return id', async () => {
+      const updateUserDto: UpdateAccountDto = {
+        firstName: 'Updated',
+        lastName: 'Name',
       };
 
       mockUserRepository.findOne.mockResolvedValue(mockUser);
+      mockUserRepository.preload.mockResolvedValue({
+        ...mockUser,
+        ...updateUserDto,
+      });
+      mockUserRepository.save.mockResolvedValue({
+        ...mockUser,
+        ...updateUserDto,
+      });
+
+      const result = await service.upsertUser(updateUserDto, mockUser.id);
+
+      expect(result).toBe(mockUser.id);
+      expect(userRepository.preload).toHaveBeenCalled();
+      expect(userRepository.save).toHaveBeenCalled();
+    });
+  });
+
+  describe('verifyAuth', () => {
+    it('should authenticate valid credentials', async () => {
+      const password = 'password123';
+      const hashedPassword = await bcrypt.hash(password, 10);
+      const userWithHash = { ...mockUser, passwordHash: hashedPassword };
+
+      mockUserRepository.findOne.mockResolvedValue(userWithHash);
       mockJwtService.sign.mockReturnValue('jwt_token');
 
-      const result = await service.verifyAuth('testuser', 'password123');
+      const result = await service.verifyAuth('testuser', password);
 
       expect(result.accessToken).toBe('jwt_token');
       expect(result.user.username).toBe('testuser');
@@ -82,11 +174,10 @@ describe('UserAccess', () => {
     });
 
     it('should throw UnauthorizedException for invalid password', async () => {
-      const mockUser = {
-        passwordHash: await bcrypt.hash('password123', 10),
-      };
+      const hashedPassword = await bcrypt.hash('rightpassword', 10);
+      const userWithHash = { ...mockUser, passwordHash: hashedPassword };
 
-      mockUserRepository.findOne.mockResolvedValue(mockUser);
+      mockUserRepository.findOne.mockResolvedValue(userWithHash);
 
       await expect(
         service.verifyAuth('testuser', 'wrongpassword')
@@ -96,18 +187,15 @@ describe('UserAccess', () => {
 
   describe('changePassword', () => {
     it('should change password successfully', async () => {
-      const oldHash = await bcrypt.hash('oldpassword', 10);
-      const mockUser = {
-        id: '1',
-        passwordHash: oldHash,
-      };
+      const oldPassword = 'oldpassword';
+      const oldHash = await bcrypt.hash(oldPassword, 10);
+      const userWithHash = { ...mockUser, passwordHash: oldHash };
 
-      mockUserRepository.findOne.mockResolvedValue(mockUser);
+      mockUserRepository.findOne.mockResolvedValue(userWithHash);
       mockUserRepository.save.mockImplementation((user) => user);
 
-      await service.changePassword('1', 'oldpassword', 'newpassword');
+      await service.changePassword(mockUser.id, oldPassword, 'newpassword');
 
-      expect(mockUserRepository.save).toHaveBeenCalled();
       const savedUser = mockUserRepository.save.mock.calls[0][0];
       expect(await bcrypt.compare('newpassword', savedUser.passwordHash)).toBe(
         true
@@ -138,36 +226,36 @@ describe('UserAccess', () => {
 
   describe('addToTenant', () => {
     it('should add user to tenant', async () => {
-      const mockUser = {
-        id: '1',
-        tenants: [],
+      const mockTenant = {
+        item: { id: '2', name: 'Tenant2' },
+        id: '2',
       };
-      const mockTenant = { id: '1', name: 'Tenant1' };
+      const userWithTenants = { ...mockUser, tenants: [] };
 
-      mockUserRepository.findOne.mockResolvedValue(mockUser);
-      mockTenantAccess.find.mockResolvedValue(mockTenant);
+      mockUserRepository.findOne.mockResolvedValue(userWithTenants);
+      mockTenantAccess.findOneTenant.mockResolvedValue(mockTenant);
       mockUserRepository.save.mockImplementation((user) => user);
 
-      await service.addToTenant('1', '1');
+      await service.addToTenant('1', '2');
 
-      expect(mockUserRepository.save).toHaveBeenCalled();
+      expect(userRepository.save).toHaveBeenCalled();
       const savedUser = mockUserRepository.save.mock.calls[0][0];
-      expect(savedUser.tenants).toContainEqual(mockTenant);
+      expect(savedUser.tenants).toContainEqual(mockTenant.item);
     });
 
     it('should not add duplicate tenant', async () => {
-      const mockTenant = { id: '1', name: 'Tenant1' };
-      const mockUser = {
-        id: '1',
-        tenants: [mockTenant],
-      };
+      const existingTenant = { id: '1', name: 'Tenant1' };
+      const userWithTenant = { ...mockUser, tenants: [existingTenant] };
 
-      mockUserRepository.findOne.mockResolvedValue(mockUser);
-      mockTenantAccess.find.mockResolvedValue(mockTenant);
+      mockUserRepository.findOne.mockResolvedValue(userWithTenant);
+      mockTenantAccess.findOneTenant.mockResolvedValue({
+        item: existingTenant,
+        id: '1',
+      });
 
       await service.addToTenant('1', '1');
 
-      expect(mockUserRepository.save).not.toHaveBeenCalled();
+      expect(userRepository.save).not.toHaveBeenCalled();
     });
   });
 });

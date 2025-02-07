@@ -54,10 +54,15 @@ export class UpdateAccountDto {
   @IsOptional()
   email?: string;
 
-  @ApiPropertyOptional({ example: 'John Smith' })
+  @ApiProperty({ example: 'John' })
   @IsString()
   @IsOptional()
-  fullName?: string;
+  firstName: string;
+
+  @ApiProperty({ example: 'Doe' })
+  @IsString()
+  @IsOptional()
+  lastName?: string;
 
   @ApiPropertyOptional()
   @IsString()
