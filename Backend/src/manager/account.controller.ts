@@ -38,9 +38,8 @@ import {
 } from '../common/dto/pagination.dto';
 import { AuthResponse, AuthResponseDto } from '../common/dto/auth.dto';
 import { QueryOptionsDto, QueryResult } from '../common/dto/query.dto';
-import { HttpService } from '@nestjs/axios';
 import { firstValueFrom } from 'rxjs';
-import { JwtAuthGuard } from 'src/auth/jwt.guard';
+import { JwtAuthGuard } from '../auth/jwt.guard';
 import {
   CreateAccountDto,
   UpdateAccountDto,
@@ -48,6 +47,7 @@ import {
   AddUserToTenantDto,
   ChangePasswordDto,
 } from '../common/dto/account.dto';
+import { TenantAccess } from '../access/services/tenant-access.service';
 
 @ApiTags('accounts')
 @Controller('api/v1/account')
@@ -57,7 +57,7 @@ export class AccountController {
 
   constructor(
     private readonly userAccess: UserAccess,
-    private readonly httpService: HttpService
+    private readonly tenantAccess: TenantAccess
   ) {}
 
   @Get()
@@ -70,9 +70,25 @@ export class AccountController {
   })
   async findAll(
     @Query(ValidationPipe) query: QueryOptionsDto,
+    @Request() req,
     @Headers('X-Tenant-ID') headerTenantId?: string
   ) {
-    const tenantId = query.tenantId || headerTenantId;
+    let tenantId = query.tenantId || headerTenantId;
+
+    if (tenantId) {
+      const isValidTenant = await this.tenantAccess.validateTenantId(tenantId);
+      if (!isValidTenant) {
+        throw new BadRequestException('Invalid tenant ID provided');
+      }
+    } else {
+      // ensure the user is an admin
+      const user = await this.userAccess.findOneUser({
+        id: req.user.userId,
+      });
+      if (user?.item?.role !== 'admin') {
+        throw new UnauthorizedException('User must be an admin');
+      }
+    }
 
     return this.userAccess.queryUsers({
       take: query.take,
@@ -87,8 +103,14 @@ export class AccountController {
   @ApiParam({ name: 'id', description: 'The account ID' })
   @ApiResponse({ status: 200, description: 'Account found' })
   @ApiResponse({ status: 404, description: 'Account not found' })
-  async findOne(@Param('id') id: string) {
-    const user = await this.userAccess.findOneUser({ id });
+  async findOne(
+    @Param('id') id: string,
+    @Headers('X-Tenant-ID') headerTenantId?: string
+  ) {
+    const user = await this.userAccess.findOneUser({
+      id,
+      tenantId: headerTenantId,
+    });
     if (!user) {
       throw new NotFoundException(`Account with ID ${id} not found`);
     }

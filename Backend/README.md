@@ -57,6 +57,14 @@ $ npm run test:e2e
 $ npm run test:cov
 ```
 
+Running test within VS Code, or VS Code derivatives like Cursor can be done using the Jest extension.
+
+![Jest Extension](./readme_images/jest-extension.jpg)
+
+Running tests using the Jest extension is recommended.
+
+![Jest Extension](./readme_images/test-example.png)
+
 ## What if process hang in development?
 
 Mac/Linux
