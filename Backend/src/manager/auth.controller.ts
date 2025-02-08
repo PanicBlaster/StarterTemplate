@@ -18,8 +18,8 @@ import {
 } from '../common/dto/auth.dto';
 import { firstValueFrom } from 'rxjs/internal/firstValueFrom';
 import { HttpService } from '@nestjs/axios';
-import { TenantAccess } from 'src/access/services/tenant-access.service';
-import { CreateAccountDto } from 'src/common/dto/account.dto';
+import { TenantAccess } from '../access/services/tenant-access.service';
+import { CreateAccountDto } from '../common/dto/account.dto';
 
 @ApiTags('auth')
 @Controller('api/v1/auth')
