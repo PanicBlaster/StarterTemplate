@@ -163,18 +163,28 @@ describe('UserAccess', () => {
 
   describe('verifyAuth', () => {
     it('should authenticate valid credentials', async () => {
-      const password = 'password123';
-      const hashedPassword = await bcrypt.hash(password, 10);
-      const userWithHash = { ...mockUser, passwordHash: hashedPassword };
+      const mockUser = {
+        id: '123',
+        username: 'testuser',
+        passwordHash: await bcrypt.hash('password123', 10),
+        tenants: [{ id: 'tenant1', name: 'Test Tenant' }],
+      };
 
-      mockUserRepository.findOne.mockResolvedValue(userWithHash);
+      mockUserRepository.findOne.mockResolvedValue(mockUser);
       mockJwtService.sign.mockReturnValue('jwt_token');
+      jest
+        .spyOn(bcrypt, 'compare')
+        .mockImplementation(() => Promise.resolve(true));
 
-      const result = await service.verifyAuth('testuser', password);
+      const result = await service.verifyAuth({
+        username: 'testuser',
+        password: 'password123',
+      });
 
       expect(result.accessToken).toBe('jwt_token');
       expect(result.user.username).toBe('testuser');
       expect(result.user.tenants).toHaveLength(1);
+      expect(result.user.tenants[0].id).toBe('tenant1');
     });
 
     it('should throw UnauthorizedException for invalid password', async () => {
