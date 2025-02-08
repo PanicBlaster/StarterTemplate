@@ -503,6 +503,12 @@ Other notes:
 
 - If a call chain is modified or created, update the CALLCHAINS.md file.
 
+## AI Code Generation and Testing
+
+AI Code generation should generate tests when creating manager or access code. Look at the existing tests for examples of how to test the code.
+
+AI should focus on generating good smoke tests, but should not be relied on for comprehensive tests.
+
 ## AI Code Generation example
 
 ```
