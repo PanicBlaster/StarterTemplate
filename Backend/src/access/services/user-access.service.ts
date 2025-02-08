@@ -157,7 +157,7 @@ export class UserAccess {
       tenants: user.tenants,
     };
 
-    const token = this.jwtService.sign({ userId: user.id });
+    const token = await this.jwtService.signAsync({ userId: user.id });
 
     return {
       accessToken: token,

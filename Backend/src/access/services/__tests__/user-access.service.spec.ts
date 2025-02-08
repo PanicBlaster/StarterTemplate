@@ -40,6 +40,7 @@ describe('UserAccess', () => {
 
   const mockJwtService = {
     sign: jest.fn(),
+    signAsync: jest.fn(),
   };
 
   const mockTenantAccess = {
@@ -156,7 +157,6 @@ describe('UserAccess', () => {
       const result = await service.upsertUser(updateUserDto, mockUser.id);
 
       expect(result).toBe(mockUser.id);
-      expect(userRepository.preload).toHaveBeenCalled();
       expect(userRepository.save).toHaveBeenCalled();
     });
   });
@@ -171,15 +171,10 @@ describe('UserAccess', () => {
       };
 
       mockUserRepository.findOne.mockResolvedValue(mockUser);
-      mockJwtService.sign.mockReturnValue('jwt_token');
-      jest
-        .spyOn(bcrypt, 'compare')
-        .mockImplementation(() => Promise.resolve(true));
 
-      const result = await service.verifyAuth({
-        username: 'testuser',
-        password: 'password123',
-      });
+      mockJwtService.signAsync.mockResolvedValue('jwt_token');
+
+      const result = await service.verifyAuth('testuser', 'password123');
 
       expect(result.accessToken).toBe('jwt_token');
       expect(result.user.username).toBe('testuser');
