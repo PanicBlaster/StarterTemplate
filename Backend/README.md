@@ -483,11 +483,13 @@ When generating an new Access Service, use the following guidelines.
 3. Create the DTO in the common/dto folder.
 4. Update access.module.ts to include the entity and service.
 5. Update database.config.ts to include the entity.
+6. Create the tests for the service in the access/services/**tests** folder.
 
 When generating an new Manager, use the following guidelines.
 
 1. Create the controller in the manager/controllers folder.
 2. Update manager.module.ts to include the controller.
+3. Create the tests for the controller in the manager/controllers/**tests** folder.
 
 Other notes:
 
