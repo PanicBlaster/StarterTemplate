@@ -1,20 +1,19 @@
 import { Test, TestingModule } from '@nestjs/testing';
+import { HttpService } from '@nestjs/axios';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { NotFoundException } from '@nestjs/common';
-import { HttpService } from '@nestjs/axios';
-import { Tenant } from '../../entities/tenant.entity';
 import { TenantAccess } from '../tenant-access.service';
+import { Tenant } from '../../entities/tenant.entity';
+import { NotFoundException } from '@nestjs/common';
 
 describe('TenantAccess', () => {
   let service: TenantAccess;
   let repository: Repository<Tenant>;
+  let httpService: HttpService;
 
   const mockTenant = {
-    id: '123e4567-e89b-12d3-a456-426614174000',
+    id: '123',
     name: 'Test Tenant',
-    notes: 'Test Notes',
-    isActive: true,
     createdAt: new Date(),
     updatedAt: new Date(),
   };
@@ -24,12 +23,12 @@ describe('TenantAccess', () => {
     findAndCount: jest.fn(),
     create: jest.fn(),
     save: jest.fn(),
+    delete: jest.fn(),
     preload: jest.fn(),
   };
 
   const mockHttpService = {
     get: jest.fn(),
-    post: jest.fn(),
   };
 
   beforeEach(async () => {
@@ -49,6 +48,7 @@ describe('TenantAccess', () => {
 
     service = module.get<TenantAccess>(TenantAccess);
     repository = module.get<Repository<Tenant>>(getRepositoryToken(Tenant));
+    httpService = module.get<HttpService>(HttpService);
   });
 
   afterEach(() => {
@@ -56,65 +56,67 @@ describe('TenantAccess', () => {
   });
 
   describe('findOneTenant', () => {
-    it('should return a tenant by id', async () => {
+    it('should return a tenant when found', async () => {
       mockRepository.findOne.mockResolvedValue(mockTenant);
-      const result = await service.findOneTenant({ id: mockTenant.id });
+
+      const result = await service.findOneTenant({ id: '123' });
+
       expect(result).toEqual({
         item: mockTenant,
         id: mockTenant.id,
       });
-      expect(repository.findOne).toHaveBeenCalledWith({
-        where: { id: mockTenant.id },
-        relations: ['projects'],
+      expect(mockRepository.findOne).toHaveBeenCalledWith({
+        where: { id: '123' },
       });
     });
 
-    it('should return null if tenant not found', async () => {
+    it('should return null when tenant not found', async () => {
       mockRepository.findOne.mockResolvedValue(null);
-      const result = await service.findOneTenant({ id: 'non-existent-id' });
+
+      const result = await service.findOneTenant({ id: '123' });
+
       expect(result).toBeNull();
     });
   });
 
   describe('findByName', () => {
-    it('should return a tenant by name', async () => {
+    it('should return a tenant when found by name', async () => {
       mockRepository.findOne.mockResolvedValue(mockTenant);
-      const result = await service.findByName(mockTenant.name);
+
+      const result = await service.findByName('Test Tenant');
+
       expect(result).toEqual({
         item: mockTenant,
         id: mockTenant.id,
       });
-      expect(repository.findOne).toHaveBeenCalledWith({
-        where: { name: mockTenant.name },
+      expect(mockRepository.findOne).toHaveBeenCalledWith({
+        where: { name: 'Test Tenant' },
       });
     });
 
-    it('should return null if tenant not found by name', async () => {
+    it('should return null when tenant not found by name', async () => {
       mockRepository.findOne.mockResolvedValue(null);
-      const result = await service.findByName('non-existent-name');
+
+      const result = await service.findByName('Nonexistent Tenant');
+
       expect(result).toBeNull();
     });
   });
 
   describe('queryTenants', () => {
     it('should return paginated tenants', async () => {
-      const mockTenants = [mockTenant];
-      const mockTotal = 1;
-      mockRepository.findAndCount.mockResolvedValue([mockTenants, mockTotal]);
+      const tenants = [mockTenant];
+      mockRepository.findAndCount.mockResolvedValue([tenants, 1]);
 
-      const options = { take: 10, skip: 0 };
-      const result = await service.queryTenants(options);
+      const result = await service.queryTenants({ take: 10, skip: 0 });
 
       expect(result).toEqual({
-        items: mockTenants.map((item) => ({
-          item,
-          id: item.id,
-        })),
-        total: mockTotal,
+        items: [{ item: mockTenant, id: mockTenant.id }],
+        total: 1,
         take: 10,
         skip: 0,
       });
-      expect(repository.findAndCount).toHaveBeenCalledWith({
+      expect(mockRepository.findAndCount).toHaveBeenCalledWith({
         take: 10,
         skip: 0,
         where: {},
@@ -124,72 +126,75 @@ describe('TenantAccess', () => {
   });
 
   describe('upsertTenant', () => {
-    const createTenantDto = {
-      name: 'New Tenant',
-      notes: 'New Notes',
-      isActive: true,
-    };
+    it('should create a new tenant when id is not provided', async () => {
+      const newTenant = { name: 'New Tenant' };
+      mockRepository.create.mockReturnValue({ ...newTenant, id: '456' });
+      mockRepository.save.mockResolvedValue({ ...newTenant, id: '456' });
 
-    it('should create a new tenant and return id', async () => {
-      const savedTenant = { ...mockTenant, ...createTenantDto };
-      mockRepository.create.mockReturnValue(savedTenant);
-      mockRepository.save.mockResolvedValue(savedTenant);
+      const result = await service.upsertTenant(newTenant);
 
-      const result = await service.upsertTenant(createTenantDto);
-
-      expect(result).toBe(savedTenant.id);
-      expect(repository.create).toHaveBeenCalled();
-      expect(repository.save).toHaveBeenCalled();
+      expect(result).toBe('456');
+      expect(mockRepository.create).toHaveBeenCalled();
+      expect(mockRepository.save).toHaveBeenCalled();
     });
 
-    it('should update an existing tenant and return id', async () => {
-      const updateTenantDto = {
-        name: 'Updated Tenant',
-        notes: 'Updated Notes',
-      };
-
+    it('should update existing tenant when id is provided', async () => {
+      const updateData = { name: 'Updated Tenant' };
       mockRepository.findOne.mockResolvedValue(mockTenant);
       mockRepository.preload.mockResolvedValue({
         ...mockTenant,
-        ...updateTenantDto,
+        ...updateData,
       });
-      mockRepository.save.mockResolvedValue({
-        ...mockTenant,
-        ...updateTenantDto,
-      });
+      mockRepository.save.mockResolvedValue({ ...mockTenant, ...updateData });
 
-      const result = await service.upsertTenant(updateTenantDto, mockTenant.id);
+      const result = await service.upsertTenant(updateData, '123');
 
-      expect(result).toBe(mockTenant.id);
-      expect(repository.preload).toHaveBeenCalled();
-      expect(repository.save).toHaveBeenCalled();
+      expect(result).toBe('123');
+      expect(mockRepository.preload).toHaveBeenCalled();
+      expect(mockRepository.save).toHaveBeenCalled();
     });
 
     it('should throw NotFoundException when updating non-existent tenant', async () => {
       mockRepository.findOne.mockResolvedValue(null);
 
       await expect(
-        service.upsertTenant({ name: 'Test' }, 'non-existent-id')
+        service.upsertTenant({ name: 'Updated Tenant' }, '999')
       ).rejects.toThrow(NotFoundException);
+    });
+  });
+
+  describe('removeTenant', () => {
+    it('should delete a tenant', async () => {
+      mockRepository.delete.mockResolvedValue({ affected: 1 });
+
+      await service.removeTenant({ id: '123' });
+
+      expect(mockRepository.delete).toHaveBeenCalledWith('123');
     });
   });
 
   describe('validateTenantId', () => {
     it('should return true for valid tenant id', async () => {
       mockRepository.findOne.mockResolvedValue(mockTenant);
-      const result = await service.validateTenantId(mockTenant.id);
+
+      const result = await service.validateTenantId('123');
+
       expect(result).toBe(true);
     });
 
     it('should return false for invalid tenant id', async () => {
       mockRepository.findOne.mockResolvedValue(null);
-      const result = await service.validateTenantId('invalid-id');
+
+      const result = await service.validateTenantId('999');
+
       expect(result).toBe(false);
     });
 
     it('should return false for empty tenant id', async () => {
       const result = await service.validateTenantId('');
+
       expect(result).toBe(false);
+      expect(mockRepository.findOne).not.toHaveBeenCalled();
     });
   });
 });
