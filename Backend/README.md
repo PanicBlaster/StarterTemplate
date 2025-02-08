@@ -474,6 +474,62 @@ export interface QueryResult<T> {
 }
 ```
 
+# AI Code Generation Guidelines
+
+When generating an new Access Service, use the following guidelines.
+
+1. Create the entity in the access/entities folder.
+2. Create the service in the access/services folder.
+3. Create the DTO in the common/dto folder.
+4. Update access.module.ts to include the entity and service.
+5. Update database.config.ts to include the entity.
+
+When generating an new Manager, use the following guidelines.
+
+1. Create the controller in the manager/controllers folder.
+2. Update manager.module.ts to include the controller.
+
+Other notes:
+
+- If a call chain is modified or created, update the CALLCHAINS.md file.
+
+## AI Code Generation example
+
+```
+WorkManager (WorkController) --> TaskAccess-->TaskEntity
+
+Task Entity should have the following properties
+id
+title
+description
+isComplete (boolean)
+startDate
+endDate
+duration (number)
+
+make sure code will compile when completed.
+```
+
+The above would create the following files:
+
+```
+- src/access/entities/task.entity.ts
+- src/access/services/task-access.service.ts
+- src/access/services/__tests__/task-access.service.spec.ts
+- src/common/dto/task.dto.ts
+- src/manager/controllers/work.controller.ts
+- src/manager/controllers/__tests__/work.controller.spec.ts
+- src/manager/manager.module.ts
+```
+
+The above would modify the following files:
+
+```
+- src/manager/manager.module.ts
+- src/access/access.module.ts
+- CALLCHAINS.md
+```
+
 ---
 
 <p align="center">
