@@ -30,6 +30,13 @@
   </p-menubar>
 
   <div class="content">
+    <div class="breadcrumb-container" *ngIf="isAuthenticated">
+      <p-breadcrumb
+        [model]="breadcrumbItems"
+        [home]="home"
+        [styleClass]="'border-none surface-ground'"
+      ></p-breadcrumb>
+    </div>
     <router-outlet></router-outlet>
   </div>
 

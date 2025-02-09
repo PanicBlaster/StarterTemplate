@@ -99,3 +99,23 @@
 p-avatar {
     vertical-align: middle;
 }
+
+.breadcrumb-container {
+  margin-bottom: 1rem;
+  
+  ::ng-deep .p-breadcrumb {
+    background: transparent;
+    border: none;
+    padding: 0.5rem 0;
+    
+    .p-breadcrumb-chevron {
+      margin: 0 0.5rem;
+    }
+    
+    li .p-menuitem-link {
+      &:focus {
+        box-shadow: none;
+      }
+    }
+  }
+}

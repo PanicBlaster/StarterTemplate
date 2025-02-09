@@ -8,6 +8,8 @@ import { MenuModule } from 'primeng/menu';
 import { ButtonModule } from 'primeng/button';
 import { AuthService } from './services/auth.service';
 import { TooltipModule } from 'primeng/tooltip';
+import { BreadcrumbModule } from 'primeng/breadcrumb';
+import { NavigationEnd } from '@angular/router';
 
 @Component({
   selector: 'app-root',
@@ -22,6 +24,7 @@ import { TooltipModule } from 'primeng/tooltip';
     MenuModule,
     TooltipModule,
     ButtonModule,
+    BreadcrumbModule,
   ],
 })
 export class AppComponent implements OnInit {
@@ -31,6 +34,8 @@ export class AppComponent implements OnInit {
   isAuthenticated = false;
   currentYear = new Date().getFullYear();
   version = '0.0.0'; // Default version
+  breadcrumbItems: MenuItem[] = [];
+  home: MenuItem = { icon: 'pi pi-home', routerLink: '/' };
 
   constructor(public authService: AuthService, private router: Router) {
     this.authService.isAuthenticated$.subscribe((isAuthenticated) => {
@@ -39,6 +44,13 @@ export class AppComponent implements OnInit {
       this.updateProfileItems();
     });
     this.version = (window as any).__APP_VERSION__ || '0.0.0';
+
+    // Subscribe to router events to update breadcrumbs
+    this.router.events.subscribe((event) => {
+      if (event instanceof NavigationEnd) {
+        this.updateBreadcrumbs();
+      }
+    });
   }
 
   ngOnInit() {
@@ -99,5 +111,14 @@ export class AppComponent implements OnInit {
   toggleTheme() {
     this.isDarkMode = !this.isDarkMode;
     document.body.classList.toggle('dark', this.isDarkMode);
+  }
+
+  private updateBreadcrumbs() {
+    const paths = this.router.url.split('/').filter((x) => x);
+    this.breadcrumbItems = paths.map((path, index) => {
+      const label = path.charAt(0).toUpperCase() + path.slice(1);
+      const routerLink = '/' + paths.slice(0, index + 1).join('/');
+      return { label, routerLink };
+    });
   }
 }
