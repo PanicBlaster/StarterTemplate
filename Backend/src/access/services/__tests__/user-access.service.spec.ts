@@ -11,6 +11,7 @@ import {
   CreateAccountDto,
   UpdateAccountDto,
 } from '../../../common/dto/account.dto';
+import { UserDto } from 'src/common/dto/user.dto';
 
 describe('UserAccess', () => {
   let service: UserAccess;
@@ -26,7 +27,10 @@ describe('UserAccess', () => {
     lastName: 'User',
     email: 'test@example.com',
     role: 'user',
+    source: 'LOCAL',
     tenants: [{ id: '1', name: 'Tenant1' }],
+    createdAt: new Date('2024-01-01'),
+    updatedAt: new Date('2024-01-01'),
   };
 
   const mockUserRepository = {
@@ -80,8 +84,19 @@ describe('UserAccess', () => {
     it('should return a user by id', async () => {
       mockUserRepository.findOne.mockResolvedValue(mockUser);
       const result = await service.findOneUser({ id: mockUser.id });
+      const dto = {
+        username: mockUser.username,
+        email: mockUser.email,
+        firstName: mockUser.firstName,
+        lastName: mockUser.lastName,
+        role: mockUser.role,
+        source: mockUser.source,
+        tenants: mockUser.tenants,
+        createdAt: mockUser.createdAt,
+        updatedAt: mockUser.updatedAt,
+      } as UserDto;
       expect(result).toEqual({
-        item: mockUser,
+        item: dto,
         id: mockUser.id,
       });
       expect(userRepository.findOne).toHaveBeenCalledWith({
@@ -103,12 +118,24 @@ describe('UserAccess', () => {
       const mockTotal = 1;
       mockUserRepository.findAndCount.mockResolvedValue([mockUsers, mockTotal]);
 
+      const dto = {
+        username: mockUser.username,
+        email: mockUser.email,
+        firstName: mockUser.firstName,
+        lastName: mockUser.lastName,
+        role: mockUser.role,
+        source: mockUser.source,
+        tenants: mockUser.tenants,
+        createdAt: mockUser.createdAt,
+        updatedAt: mockUser.updatedAt,
+      } as UserDto;
+
       const options = { take: 10, skip: 0 };
       const result = await service.queryUsers(options);
 
       expect(result).toEqual({
         items: mockUsers.map((item) => ({
-          item,
+          item: dto,
           id: item.id,
         })),
         total: mockTotal,
