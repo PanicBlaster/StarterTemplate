@@ -9,6 +9,7 @@ import { MessageService } from 'primeng/api';
 import { AccountService } from '../../services/account.service';
 import { AuthService } from '../../services/auth.service';
 import { UserDto } from '../../dto/user.dto';
+import { FluidModule } from 'primeng/fluid';
 
 @Component({
   selector: 'app-profile',
@@ -20,6 +21,7 @@ import { UserDto } from '../../dto/user.dto';
     InputTextModule,
     ToolbarModule,
     ToastModule,
+    FluidModule,
   ],
   providers: [MessageService],
   template: `
@@ -38,57 +40,55 @@ import { UserDto } from '../../dto/user.dto';
         </div>
       </p-toolbar>
 
-      <div class="grid mt-3">
-        <div class="col-12">
-          <div class="grid">
-            <!-- Username and Email row -->
-            <div class="col-12 md:col-6 field">
-              <label for="username">Username</label>
-              <input
-                id="username"
-                type="text"
-                pInputText
-                [(ngModel)]="user.username"
-                class="w-full"
-                readonly
-              />
-            </div>
-            <div class="col-12 md:col-6 field">
-              <label for="email">Email</label>
-              <input
-                id="email"
-                type="email"
-                pInputText
-                [(ngModel)]="user.email"
-                class="w-full"
-                readonly
-              />
-            </div>
+      <p-fluid>
+        <div class="grid mt-3">
+          <div class="col-12">
+            <div class="grid">
+              <!-- Username and Email row -->
+              <div class="col-12 md:col-6 field">
+                <label for="username">Username</label>
+                <input
+                  id="username"
+                  type="text"
+                  pInputText
+                  [(ngModel)]="user.username"
+                  readonly
+                />
+              </div>
+              <div class="col-12 md:col-6 field">
+                <label for="email">Email</label>
+                <input
+                  id="email"
+                  type="email"
+                  pInputText
+                  [(ngModel)]="user.email"
+                  readonly
+                />
+              </div>
 
-            <!-- First Name and Last Name row -->
-            <div class="col-12 md:col-6 field">
-              <label for="firstName">First Name</label>
-              <input
-                id="firstName"
-                type="text"
-                pInputText
-                [(ngModel)]="user.firstName"
-                class="w-full"
-              />
-            </div>
-            <div class="col-12 md:col-6 field">
-              <label for="lastName">Last Name</label>
-              <input
-                id="lastName"
-                type="text"
-                pInputText
-                [(ngModel)]="user.lastName"
-                class="w-full"
-              />
+              <!-- First Name and Last Name row -->
+              <div class="col-12 md:col-6 field">
+                <label for="firstName">First Name</label>
+                <input
+                  id="firstName"
+                  type="text"
+                  pInputText
+                  [(ngModel)]="user.firstName"
+                />
+              </div>
+              <div class="col-12 md:col-6 field">
+                <label for="lastName">Last Name</label>
+                <input
+                  id="lastName"
+                  type="text"
+                  pInputText
+                  [(ngModel)]="user.lastName"
+                />
+              </div>
             </div>
           </div>
         </div>
-      </div>
+      </p-fluid>
     </div>
     <p-toast></p-toast>
   `,
