@@ -1,4 +1,4 @@
-import { Component, Input } from '@angular/core';
+import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ButtonModule } from 'primeng/button';
 import { ToolbarModule } from 'primeng/toolbar';
@@ -16,23 +16,27 @@ import { FluidModule } from 'primeng/fluid';
         </div>
 
         <div class="p-toolbar-group-end">
-          <!-- Add button -->
+          <!-- Add button - hide in edit mode -->
           <p-button
-            *ngIf="supportsAdd"
+            *ngIf="supportsAdd && !isEditing"
             icon="pi pi-plus"
             (onClick)="onAddClick()"
             [label]="isDesktop ? 'Add' : undefined"
             styleClass="p-button-primary mr-2"
           ></p-button>
 
-          <!-- Custom actions -->
-          <p-button
-            *ngFor="let action of actions"
-            [icon]="action.icon"
-            [label]="isDesktop ? action.label : undefined"
-            (onClick)="action.onClick()"
-            [styleClass]="(action.styleClass || 'p-button-secondary') + ' mr-2'"
-          ></p-button>
+          <!-- Custom actions - hide in edit mode -->
+          <ng-container *ngIf="!isEditing">
+            <p-button
+              *ngFor="let action of actions"
+              [icon]="action.icon"
+              [label]="isDesktop ? action.label : undefined"
+              (onClick)="action.onClick()"
+              [styleClass]="
+                (action.styleClass || 'p-button-secondary') + ' mr-2'
+              "
+            ></p-button>
+          </ng-container>
 
           <!-- Edit mode actions -->
           <ng-container *ngIf="supportsEdit">
@@ -158,10 +162,10 @@ export class PageToolbarComponent {
   @Input() supportsEdit: boolean = false;
   @Input() supportsAdd: boolean = false;
   @Input() isEditing: boolean = false;
-  @Input() onEdit: () => void = () => {};
-  @Input() onSave: () => void = () => {};
-  @Input() onCancel: () => void = () => {};
-  @Input() onAdd: () => void = () => {};
+  @Output() onEdit: EventEmitter<void> = new EventEmitter<void>();
+  @Output() onSave: EventEmitter<void> = new EventEmitter<void>();
+  @Output() onCancel: EventEmitter<void> = new EventEmitter<void>();
+  @Output() onAdd: EventEmitter<void> = new EventEmitter<void>();
 
   isDesktop: boolean = window.innerWidth > 768;
 
@@ -172,18 +176,18 @@ export class PageToolbarComponent {
   }
 
   onAddClick() {
-    this.onAdd();
+    this.onAdd.emit();
   }
 
   onEditClick() {
-    this.onEdit();
+    this.onEdit.emit();
   }
 
   onSaveClick() {
-    this.onSave();
+    this.onSave.emit();
   }
 
   onCancelClick() {
-    this.onCancel();
+    this.onCancel.emit();
   }
 }

@@ -102,6 +102,7 @@ export class ItemDetailComponent implements OnInit {
   @Input() config!: ItemDetailConfig;
   @Input() item: any = {};
 
+  @Output() onLoad: EventEmitter<any> = new EventEmitter<any>();
   @Output() onCreate = new EventEmitter<any>();
   @Output() onUpdate = new EventEmitter<any>();
   @Output() onDelete = new EventEmitter<void>();

@@ -28,6 +28,14 @@ export class AccountService {
     return this.backend.put<ProcessResult>(`account/${id}`, user);
   }
 
+  createAccount(user: UserDto): Observable<ProcessResult> {
+    return this.backend.post<ProcessResult>('account', user);
+  }
+
+  deleteAccount(id: string): Observable<ProcessResult> {
+    return this.backend.delete<ProcessResult>(`account/${id}`);
+  }
+
   getAccounts(tenantId?: string): Observable<QueryResult<UserDto>> {
     return this.backend.get<UserDto[]>('account');
   }

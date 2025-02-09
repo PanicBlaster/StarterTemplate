@@ -6,6 +6,9 @@ import { AuthService } from '../../services/auth.service';
 import { Profile } from '../../dto/auth.dto';
 import { MessageService } from 'primeng/api';
 import { ToastModule } from 'primeng/toast';
+import { QueryOptions } from '../../dto/query.dto';
+import { AccountService } from '../../services/account.service';
+import { UserDto } from '../../dto/user.dto';
 
 @Component({
   selector: 'app-test-item',
@@ -39,11 +42,20 @@ export class TestItemComponent implements OnInit {
       { key: 'firstName', label: 'First Name', type: 'text', required: true },
       { key: 'lastName', label: 'Last Name', type: 'text', required: true },
     ],
+    dataService: {
+      loadItem: (params: QueryOptions) =>
+        this.accountService.getAccount(params.id || ''),
+      createItem: (item: UserDto) => this.accountService.createAccount(item),
+      updateItem: (id: string, item: UserDto) =>
+        this.accountService.updateAccount(id, item),
+      deleteItem: (id: string) => this.accountService.deleteAccount(id),
+    },
   };
 
   constructor(
     private authService: AuthService,
-    private messageService: MessageService
+    private messageService: MessageService,
+    private accountService: AccountService
   ) {}
 
   ngOnInit() {
