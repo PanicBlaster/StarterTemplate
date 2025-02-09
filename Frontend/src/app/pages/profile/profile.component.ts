@@ -41,51 +41,47 @@ import { FluidModule } from 'primeng/fluid';
       </p-toolbar>
 
       <p-fluid>
-        <div class="grid mt-3">
-          <div class="col-12">
-            <div class="grid">
-              <!-- Username and Email row -->
-              <div class="col-12 md:col-6 field">
-                <label for="username">Username</label>
-                <input
-                  id="username"
-                  type="text"
-                  pInputText
-                  [(ngModel)]="user.username"
-                  readonly
-                />
-              </div>
-              <div class="col-12 md:col-6 field">
-                <label for="email">Email</label>
-                <input
-                  id="email"
-                  type="email"
-                  pInputText
-                  [(ngModel)]="user.email"
-                  readonly
-                />
-              </div>
+        <div class="grid grid-cols-2 gap-4">
+          <!-- Username and Email row -->
+          <div>
+            <label for="username">Username</label>
+            <input
+              id="username"
+              type="text"
+              pInputText
+              [(ngModel)]="user.username"
+              readonly
+            />
+          </div>
+          <div>
+            <label for="email">Email</label>
+            <input
+              id="email"
+              type="email"
+              pInputText
+              [(ngModel)]="user.email"
+              readonly
+            />
+          </div>
 
-              <!-- First Name and Last Name row -->
-              <div class="col-12 md:col-6 field">
-                <label for="firstName">First Name</label>
-                <input
-                  id="firstName"
-                  type="text"
-                  pInputText
-                  [(ngModel)]="user.firstName"
-                />
-              </div>
-              <div class="col-12 md:col-6 field">
-                <label for="lastName">Last Name</label>
-                <input
-                  id="lastName"
-                  type="text"
-                  pInputText
-                  [(ngModel)]="user.lastName"
-                />
-              </div>
-            </div>
+          <!-- First Name and Last Name row -->
+          <div>
+            <label for="firstName">First Name</label>
+            <input
+              id="firstName"
+              type="text"
+              pInputText
+              [(ngModel)]="user.firstName"
+            />
+          </div>
+          <div>
+            <label for="lastName">Last Name</label>
+            <input
+              id="lastName"
+              type="text"
+              pInputText
+              [(ngModel)]="user.lastName"
+            />
           </div>
         </div>
       </p-fluid>
