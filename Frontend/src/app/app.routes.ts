@@ -10,6 +10,7 @@ import { UserDetailComponent } from './pages/users/user-detail/user-detail.compo
 import { SelectUserComponent } from './pages/users/select-user/select-user.component';
 import { NotificationsComponent } from './pages/notifications/notifications.component';
 import { AuthMicrosoftComponent } from './pages/auth/auth-microsoft/auth-microsoft.component';
+import { TestItemComponent } from './pages/test-item/test-item.component';
 
 export const routes: Routes = [
   { path: 'auth', component: AuthComponent },
@@ -37,5 +38,11 @@ export const routes: Routes = [
   {
     path: 'authmicrosoft',
     component: AuthMicrosoftComponent,
+  },
+
+  {
+    path: 'testitem',
+    component: TestItemComponent,
+    canActivate: [authGuard],
   },
 ];
