@@ -156,7 +156,7 @@ The project follows a layered architecture:
    - Implements REST API endpoints
    - Provides Swagger documentation
    - Handles input validation and error responses
-   - All managers must be added to the managers module.
+   - All managers/controllers must be added to the managers module.
 
 3. **Common Layer** (`src/common/`)
 
@@ -188,6 +188,8 @@ Tenant Id can be passed in the header or in the body. If it is passed in the bod
 Examples below assume we are building a multi-tenant application. Tenant related information could be removed if we are building a single-tenant application.
 
 ## Manager Module
+
+All managers/controllers must be added to the managers module. New managers/controllers should be added to the manager.module.ts file.
 
 ```typescript
 @Module({
@@ -496,7 +498,7 @@ When generating an new Access Service, use the following guidelines.
 When generating an new Manager, use the following guidelines.
 
 1. Create the controller in the manager/controllers folder.
-2. Update manager.module.ts to include the controller.
+2. Update manager.module.ts to include the new controller.
 3. Create the tests for the controller in the manager/controllers/**tests** folder.
 
 Other notes:
@@ -512,6 +514,8 @@ AI should focus on generating good smoke tests, but should not be relied on for 
 ## AI Code Generation example
 
 ```
+Obey rules as defined in the README.md file. Make sure to obey all rules in the AI Code Generation Guidelines section.
+
 WorkManager (WorkController) --> TaskAccess-->TaskEntity
 
 Task Entity should have the following properties
