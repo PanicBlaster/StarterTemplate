@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, Query } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, RouterModule, Router } from '@angular/router';
 import { TableModule } from 'primeng/table';
@@ -6,7 +6,9 @@ import { ButtonModule } from 'primeng/button';
 import { ToastModule } from 'primeng/toast';
 import { MessageService } from 'primeng/api';
 import { ToolbarModule } from 'primeng/toolbar';
-import { AccountService, User } from '../../../services/account.service';
+import { AccountService } from '../../../services/account.service';
+import { QueryResult, QueryResultItem } from '../../../dto/query.dto';
+import { UserDto } from '../../../dto/user.dto';
 
 @Component({
   selector: 'app-user-list',
@@ -49,7 +51,7 @@ import { AccountService, User } from '../../../services/account.service';
 
       <div class="mt-3">
         <p-table
-          [value]="users"
+          [value]="users.items"
           [loading]="loading"
           [paginator]="true"
           [rows]="10"
@@ -67,8 +69,8 @@ import { AccountService, User } from '../../../services/account.service';
           <ng-template pTemplate="body" let-user>
             <tr>
               <td>{{ user.id }}</td>
-              <td>{{ user.username }}</td>
-              <td>{{ user.email }}</td>
+              <td>{{ user.item.username }}</td>
+              <td>{{ user.item.email }}</td>
               <td>
                 <div class="flex gap-2">
                   <p-button
@@ -96,7 +98,12 @@ import { AccountService, User } from '../../../services/account.service';
 export class UserListComponent implements OnInit {
   tenantId: string = '';
   tenantName: string = '';
-  users: User[] = [];
+  users: QueryResult<UserDto> = {
+    items: [],
+    total: 0,
+    take: 10,
+    skip: 0,
+  };
   loading: boolean = true;
 
   constructor(
@@ -114,8 +121,8 @@ export class UserListComponent implements OnInit {
   private loadUsers() {
     this.loading = true;
     this.accountService.getAccounts(this.tenantId).subscribe({
-      next: (data: any) => {
-        this.users = data.items;
+      next: (data: QueryResult<UserDto>) => {
+        this.users = data;
         this.loading = false;
       },
       error: (error) => {

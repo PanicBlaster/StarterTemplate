@@ -46,3 +46,9 @@ export interface QueryResult<T> {
   take: number;
   skip: number;
 }
+
+export interface ProcessResult {
+  id: string;
+  success: boolean;
+  message?: string;
+}

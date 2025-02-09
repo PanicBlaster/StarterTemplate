@@ -8,10 +8,6 @@ import { Repository } from 'typeorm';
 import { User } from '../entities/user.entity';
 import { v4 as uuidv4 } from 'uuid';
 import * as bcrypt from 'bcrypt';
-import {
-  PaginationOptions,
-  PaginatedResult,
-} from '../../common/dto/pagination.dto';
 import { JwtService } from '@nestjs/jwt';
 import { JwtPayload, AuthResponse } from '../../common/dto/auth.dto';
 import {
@@ -31,6 +27,7 @@ import {
   CreateAccountDto,
   UpdateAccountDto,
 } from '../../common/dto/account.dto';
+import { UserDto } from '../../common/dto/user.dto';
 
 @Injectable()
 export class UserAccess {
@@ -41,9 +38,23 @@ export class UserAccess {
     private readonly tenantAccess: TenantAccess
   ) {}
 
+  private mapToDto(user: User): UserDto {
+    return {
+      username: user.username,
+      email: user.email,
+      firstName: user.firstName,
+      lastName: user.lastName,
+      role: user.role,
+      source: user.source,
+      tenants: user.tenants,
+      createdAt: user.createdAt,
+      updatedAt: user.updatedAt,
+    };
+  }
+
   async findOneUser(
     options: QueryOptionsDto
-  ): Promise<QueryResultItem<User> | null> {
+  ): Promise<QueryResultItem<UserDto> | null> {
     const user = await this.userRepository.findOne({
       where: { id: options.id },
       relations: ['tenants'],
@@ -52,12 +63,12 @@ export class UserAccess {
     if (!user) return null;
 
     return {
-      item: user,
+      item: this.mapToDto(user),
       id: user.id,
     };
   }
 
-  async queryUsers(options: QueryOptionsDto): Promise<QueryResult<User>> {
+  async queryUsers(options: QueryOptionsDto): Promise<QueryResult<UserDto>> {
     const [items, total] = await this.userRepository.findAndCount({
       take: options.take || 10,
       skip: options.skip || 0,
@@ -68,7 +79,7 @@ export class UserAccess {
 
     return {
       items: items.map((item) => ({
-        item,
+        item: this.mapToDto(item),
         id: item.id,
       })),
       total,
@@ -82,19 +93,22 @@ export class UserAccess {
     id?: string
   ): Promise<string> {
     if (id) {
-      const existingUser = await this.findOneUser({ id });
+      const existingUser = await this.userRepository.findOne({
+        where: { id },
+      });
       if (!existingUser) {
         throw new NotFoundException('User not found');
       }
 
-      existingUser.item.firstName = (data as any).firstName;
-      existingUser.item.lastName = (data as any).lastName;
-      existingUser.item.source = 'LOCAL';
-      existingUser.item.role = 'user';
-      existingUser.item.tenants = [];
-      existingUser.item.updatedAt = new Date();
+      existingUser.firstName = (data as any).firstName;
+      existingUser.lastName = (data as any).lastName;
+      existingUser.source = 'LOCAL';
+      existingUser.role = 'user';
+      existingUser.tenants = [];
+      existingUser.updatedAt = new Date();
 
-      await this.userRepository.save(existingUser.item);
+      await this.userRepository.save(existingUser);
+      return existingUser.id;
     } else {
       let passwordHash = undefined;
       passwordHash = (data as any).password
@@ -114,19 +128,8 @@ export class UserAccess {
         updatedAt: new Date(),
         passwordHash: passwordHash,
       });
-      id = newUser.id;
       await this.userRepository.save(newUser);
-    }
-
-    if (data.tenantId) {
-      const tenant = await this.tenantAccess.findOneTenant({
-        id: data.tenantId,
-      });
-      if (!tenant) {
-        throw new NotFoundException('Tenant not found');
-      } else {
-        await this.addToTenant(id, tenant.item.id);
-      }
+      return newUser.id;
     }
 
     return id;
@@ -147,21 +150,20 @@ export class UserAccess {
       throw new UnauthorizedException('Invalid credentials');
     }
 
-    const userDto = {
-      id: user.id,
-      username: user.username,
-      firstName: user.firstName,
-      lastName: user.firstName,
-      email: user.email,
-      role: user.role,
-      tenants: user.tenants,
-    };
+    const userDto = this.mapToDto(user);
 
     const token = await this.jwtService.signAsync({ userId: user.id });
 
     return {
       accessToken: token,
-      user: userDto,
+      user: {
+        id: user.id,
+        ...userDto,
+        tenants: user.tenants.map((tenant) => ({
+          id: tenant.id,
+          name: tenant.name,
+        })),
+      },
     };
   }
 
@@ -187,8 +189,13 @@ export class UserAccess {
   }
 
   async delete(options: QueryOptionsDto): Promise<void> {
-    const user = await this.findOneUser(options);
-    await this.userRepository.remove(user.item);
+    const user = await this.userRepository.findOne({
+      where: { id: options.id },
+    });
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+    await this.userRepository.remove(user);
   }
 
   async addToTenant(userId: string, tenantId: string): Promise<void> {

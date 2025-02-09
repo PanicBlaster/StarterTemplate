@@ -32,10 +32,6 @@ import {
   IsUUID,
 } from 'class-validator';
 import { UserAccess } from '../access/services/user-access.service';
-import {
-  PaginationOptions,
-  PaginationQueryDto,
-} from '../common/dto/pagination.dto';
 import { AuthResponse, AuthResponseDto } from '../common/dto/auth.dto';
 import { QueryOptionsDto, QueryResult } from '../common/dto/query.dto';
 import { firstValueFrom } from 'rxjs';
@@ -114,14 +110,19 @@ export class AccountController {
     if (!user) {
       throw new NotFoundException(`Account with ID ${id} not found`);
     }
-    return user;
+    return user.item;
   }
 
   @Post()
   @ApiOperation({ summary: 'Create a new account' })
   @ApiResponse({ status: 201, description: 'Account created successfully' })
   async create(@Body(ValidationPipe) createAccountDto: CreateAccountDto) {
-    return this.userAccess.upsertUser(createAccountDto);
+    const id = await this.userAccess.upsertUser(createAccountDto);
+    return {
+      id,
+      success: true,
+      message: 'Account created successfully',
+    };
   }
 
   @Put(':id')
@@ -133,11 +134,12 @@ export class AccountController {
     @Param('id') id: string,
     @Body(ValidationPipe) updateAccountDto: UpdateAccountDto
   ) {
-    try {
-      return await this.userAccess.upsertUser(updateAccountDto, id);
-    } catch {
-      throw new NotFoundException(`Account with ID ${id} not found`);
-    }
+    await this.userAccess.upsertUser(updateAccountDto, id);
+    return {
+      id,
+      success: true,
+      message: 'Account updated successfully',
+    };
   }
 
   @Post('tenant/add-user')

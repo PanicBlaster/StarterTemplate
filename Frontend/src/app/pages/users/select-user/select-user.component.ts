@@ -5,8 +5,10 @@ import { TableModule } from 'primeng/table';
 import { ButtonModule } from 'primeng/button';
 import { ToastModule } from 'primeng/toast';
 import { MessageService } from 'primeng/api';
-import { AccountService, User } from '../../../services/account.service';
+import { AccountService } from '../../../services/account.service';
 import { Location } from '@angular/common';
+import { UserDto } from '../../../dto/user.dto';
+import { QueryResultItem } from '../../../dto/query.dto';
 
 @Component({
   selector: 'app-select-user',
@@ -54,7 +56,7 @@ import { Location } from '@angular/common';
   `,
 })
 export class SelectUserComponent implements OnInit {
-  users: User[] = [];
+  users: UserDto[] = [];
   loading: boolean = true;
   tenantId: string = '';
   selectedUserId: string = '';
@@ -74,7 +76,7 @@ export class SelectUserComponent implements OnInit {
 
   private loadUsers() {
     this.loading = true;
-    this.accountService.getAllAccounts().subscribe({
+    this.accountService.getAccounts().subscribe({
       next: (data: any) => {
         this.users = data.items;
         this.loading = false;
@@ -90,7 +92,7 @@ export class SelectUserComponent implements OnInit {
     });
   }
 
-  addUser(user: User) {
+  addUser(user: QueryResultItem<UserDto>) {
     this.selectedUserId = user.id;
     this.accountService.addUserToTenant(this.tenantId, user.id).subscribe({
       next: () => {

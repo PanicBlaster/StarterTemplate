@@ -8,18 +8,7 @@ import { ToolbarModule } from 'primeng/toolbar';
 import { ToastModule } from 'primeng/toast';
 import { MessageService } from 'primeng/api';
 import { AccountService } from '../../../services/account.service';
-
-interface UserDetail {
-  id: string;
-  username: string;
-  firstName: string | null;
-  lastName: string | null;
-  email: string;
-  phone: string | null;
-  role: string | null;
-  createdAt: string;
-  updatedAt: string;
-}
+import { UserDto } from '../../../dto/user.dto';
 
 @Component({
   selector: 'app-user-detail',
@@ -120,17 +109,6 @@ interface UserDetail {
         </div>
 
         <div class="field col-12 md:col-6">
-          <label for="phone">Phone</label>
-          <input
-            id="phone"
-            type="tel"
-            pInputText
-            [(ngModel)]="user.phone"
-            class="w-full"
-            [readonly]="!isEditing"
-          />
-        </div>
-        <div class="field col-12 md:col-6">
           <label for="role">Role</label>
           <input
             id="role"
@@ -160,16 +138,17 @@ interface UserDetail {
   ],
 })
 export class UserDetailComponent implements OnInit {
-  user: UserDetail = {
-    id: '',
+  id: string = '';
+  user: UserDto = {
     username: '',
-    firstName: null,
-    lastName: null,
+    firstName: '',
+    lastName: '',
     email: '',
-    phone: null,
-    role: null,
-    createdAt: '',
-    updatedAt: '',
+    createdAt: new Date(),
+    updatedAt: new Date(),
+    role: '',
+    source: '',
+    tenants: [],
   };
   saving: boolean = false;
   isEditing: boolean = false;
@@ -206,7 +185,7 @@ export class UserDetailComponent implements OnInit {
 
   saveUser() {
     this.saving = true;
-    this.accountService.updateAccount(this.user.id, this.user).subscribe({
+    this.accountService.updateAccount(this.id, this.user).subscribe({
       next: () => {
         this.messageService.add({
           severity: 'success',

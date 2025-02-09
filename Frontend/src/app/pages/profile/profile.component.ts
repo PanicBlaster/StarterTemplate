@@ -6,8 +6,9 @@ import { InputTextModule } from 'primeng/inputtext';
 import { ToolbarModule } from 'primeng/toolbar';
 import { ToastModule } from 'primeng/toast';
 import { MessageService } from 'primeng/api';
-import { AccountService, UserDetail } from '../../services/account.service';
+import { AccountService } from '../../services/account.service';
 import { AuthService } from '../../services/auth.service';
+import { UserDto } from '../../dto/user.dto';
 
 @Component({
   selector: 'app-profile',
@@ -85,18 +86,6 @@ import { AuthService } from '../../services/auth.service';
                 class="w-full"
               />
             </div>
-
-            <!-- Phone row -->
-            <div class="col-12 md:col-6 field">
-              <label for="phone">Phone</label>
-              <input
-                id="phone"
-                type="tel"
-                pInputText
-                [(ngModel)]="user.phone"
-                class="w-full"
-              />
-            </div>
           </div>
         </div>
       </div>
@@ -118,17 +107,19 @@ import { AuthService } from '../../services/auth.service';
   ],
 })
 export class ProfileComponent implements OnInit {
-  user: UserDetail = {
-    id: '',
+  id: string = '';
+  user: UserDto = {
     username: '',
-    firstName: null,
-    lastName: null,
+    firstName: '',
+    lastName: '',
     email: '',
-    phone: null,
-    role: null,
-    createdAt: '',
-    updatedAt: '',
+    createdAt: new Date(),
+    updatedAt: new Date(),
+    source: '',
+    tenants: [],
+    role: '',
   };
+
   saving: boolean = false;
 
   constructor(
@@ -138,7 +129,7 @@ export class ProfileComponent implements OnInit {
   ) {}
 
   ngOnInit() {
-    const userId = localStorage.getItem('user_id');
+    const userId = this.authService.getUserId();
     if (userId) {
       this.loadProfile(userId);
     }
@@ -148,6 +139,7 @@ export class ProfileComponent implements OnInit {
     this.accountService.getAccount(userId).subscribe({
       next: (data) => {
         this.user = data;
+        this.id = userId;
       },
       error: () => {
         this.messageService.add({
@@ -161,7 +153,7 @@ export class ProfileComponent implements OnInit {
 
   saveProfile() {
     this.saving = true;
-    this.accountService.updateAccount(this.user.id, this.user).subscribe({
+    this.accountService.updateAccount(this.id, this.user).subscribe({
       next: () => {
         this.messageService.add({
           severity: 'success',

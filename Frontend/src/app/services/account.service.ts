@@ -3,29 +3,8 @@ import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../environments/environment';
 import { BackendService } from './backend.service';
-
-export interface User {
-  id: string;
-  username: string;
-  email: string;
-}
-
-export interface UserProfile {
-  firstName: string;
-  lastName: string;
-}
-
-export interface UserDetail {
-  id: string;
-  username: string;
-  firstName: string | null;
-  lastName: string | null;
-  email: string;
-  phone: string | null;
-  role: string | null;
-  createdAt: string;
-  updatedAt: string;
-}
+import { UserDto } from '../dto/user.dto';
+import { ProcessResult, QueryResult } from '../dto/query.dto';
 
 @Injectable({
   providedIn: 'root',
@@ -33,28 +12,24 @@ export interface UserDetail {
 export class AccountService {
   constructor(private backend: BackendService, private http: HttpClient) {}
 
-  getAccounts(tenantId: string): Observable<User[]> {
-    return this.backend.get<User[]>('account');
+  getCurrentProfile(): Observable<UserDto> {
+    return this.backend.get<UserDto>('profile');
   }
 
-  getCurrentProfile(): Observable<UserProfile> {
-    return this.backend.get<UserProfile>('profile');
+  updateProfile(profile: UserDto): Observable<ProcessResult> {
+    return this.backend.put<ProcessResult>('profile', profile);
   }
 
-  updateProfile(profile: UserProfile): Observable<UserProfile> {
-    return this.backend.put<UserProfile>('profile', profile);
+  getAccount(id: string): Observable<UserDto> {
+    return this.backend.get<UserDto>(`account/${id}`);
   }
 
-  getAccount(id: string): Observable<UserDetail> {
-    return this.backend.get<UserDetail>(`account/${id}`);
+  updateAccount(id: string, user: UserDto): Observable<ProcessResult> {
+    return this.backend.put<ProcessResult>(`account/${id}`, user);
   }
 
-  updateAccount(id: string, user: UserDetail): Observable<UserDetail> {
-    return this.backend.put<UserDetail>(`account/${id}`, user);
-  }
-
-  getAllAccounts(): Observable<User[]> {
-    return this.backend.get<UserProfile>('account');
+  getAccounts(tenantId?: string): Observable<QueryResult<UserDto>> {
+    return this.backend.get<UserDto[]>('account');
   }
 
   addUserToTenant(tenantId: string, userId: string): Observable<any> {
