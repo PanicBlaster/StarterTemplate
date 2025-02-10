@@ -9,6 +9,9 @@ import { PageToolbarComponent } from '../page-toolbar/page-toolbar.component';
 import { ItemDetailConfig, FormField } from './item-detail.types';
 import { ToolbarAction } from '../page-toolbar/page-toolbar.types';
 import { FluidModule } from 'primeng/fluid';
+import { MessageService } from 'primeng/api';
+import { ActivatedRoute } from '@angular/router';
+import { QueryOptions } from '../../dto/query.dto';
 
 @Component({
   selector: 'app-item-detail',
@@ -100,22 +103,29 @@ import { FluidModule } from 'primeng/fluid';
 })
 export class ItemDetailComponent implements OnInit {
   @Input() config!: ItemDetailConfig;
-  @Input() item: any = {};
 
-  @Output() onLoad: EventEmitter<any> = new EventEmitter<any>();
   @Output() onCreate = new EventEmitter<any>();
   @Output() onUpdate = new EventEmitter<any>();
   @Output() onDelete = new EventEmitter<void>();
 
+  query: QueryOptions = {};
+  item: any;
   isEditing: boolean = false;
   editingItem: any = {};
 
-  ngOnInit() {
-    this.resetEditingItem();
-  }
+  constructor(
+    private messageService: MessageService,
+    private route: ActivatedRoute
+  ) {}
 
-  private resetEditingItem() {
-    this.editingItem = { ...this.item };
+  ngOnInit() {
+    this.route.queryParams.subscribe((params) => {
+      this.query = this.config.dataService.parseParams(
+        params,
+        this.route.snapshot.queryParams
+      );
+      this.loadItem();
+    });
   }
 
   startEdit() {
@@ -124,16 +134,63 @@ export class ItemDetailComponent implements OnInit {
 
   cancelEdit() {
     this.isEditing = false;
-    this.resetEditingItem();
+
+    this.loadItem();
+  }
+
+  loadItem() {
+    this.config.dataService.loadItem(this.query).subscribe((item) => {
+      this.item = item;
+      this.editingItem = { ...this.item };
+    });
   }
 
   saveChanges() {
-    if (this.item && Object.keys(this.item).length > 0) {
-      this.onUpdate.emit(this.editingItem);
+    if (this.config.isNew) {
+      this.config.dataService
+        .createItem(this.query, this.editingItem)
+        .subscribe({
+          next: (result) => {
+            this.isEditing = false;
+            this.messageService.add({
+              severity: 'success',
+              summary: 'Success',
+              detail: 'Profile updated successfully',
+            });
+            this.onUpdate.emit(this.editingItem);
+          },
+          error: (error) => {
+            console.error('Error saving changes:', error);
+            this.messageService.add({
+              severity: 'error',
+              summary: 'Error',
+              detail: 'Failed to save changes',
+            });
+          },
+        });
     } else {
-      this.onCreate.emit(this.editingItem);
+      this.config.dataService
+        .updateItem(this.query, this.editingItem)
+        .subscribe({
+          next: (result) => {
+            this.isEditing = false;
+            this.messageService.add({
+              severity: 'success',
+              summary: 'Success',
+              detail: 'Profile updated successfully',
+            });
+            this.onUpdate.emit(this.editingItem);
+          },
+          error: (error) => {
+            console.error('Error saving changes:', error);
+            this.messageService.add({
+              severity: 'error',
+              summary: 'Error',
+              detail: 'Failed to save changes',
+            });
+          },
+        });
     }
-    this.isEditing = false;
   }
 
   createNew() {

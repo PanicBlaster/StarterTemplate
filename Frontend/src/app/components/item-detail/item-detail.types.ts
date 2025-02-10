@@ -1,6 +1,7 @@
 import { Observable } from 'rxjs';
 import { ToolbarAction, Metric } from '../page-toolbar/page-toolbar.types';
 import { ProcessResult, QueryOptions } from '../../dto/query.dto';
+import { Params } from '@angular/router';
 
 export type FormFieldType = 'text' | 'number' | 'date' | 'select';
 
@@ -19,19 +20,22 @@ export interface FormField {
 }
 
 export interface ItemDetailDataService<T> {
+  parseParams: (params: Params, queryParams: Params) => QueryOptions;
   loadItem(params: QueryOptions): Observable<T>;
-  createItem(item: any): Observable<ProcessResult>;
-  updateItem(id: string, item: any): Observable<ProcessResult>;
-  deleteItem(id: string): Observable<ProcessResult>;
+  createItem(query: QueryOptions, item: any): Observable<ProcessResult>;
+  updateItem(query: QueryOptions, item: any): Observable<ProcessResult>;
+  deleteItem(query: QueryOptions): Observable<ProcessResult>;
 }
 
 export interface ItemDetailConfig {
   header: string;
   isEditable: boolean;
+  isNew: boolean;
   supportsAdd: boolean;
   supportsDelete: boolean;
   customToolbarItems?: ToolbarAction[];
   metrics?: Metric[];
   formLayout: FormField[];
   dataService: ItemDetailDataService<any>;
+  updateSuccessMessage: string;
 }

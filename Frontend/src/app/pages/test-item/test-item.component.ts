@@ -9,6 +9,7 @@ import { ToastModule } from 'primeng/toast';
 import { QueryOptions } from '../../dto/query.dto';
 import { AccountService } from '../../services/account.service';
 import { UserDto } from '../../dto/user.dto';
+import { Params } from '@angular/router';
 
 @Component({
   selector: 'app-test-item',
@@ -16,22 +17,18 @@ import { UserDto } from '../../dto/user.dto';
   imports: [CommonModule, ItemDetailComponent, ToastModule],
   providers: [MessageService],
   template: `
-    <app-item-detail
-      [config]="detailConfig"
-      [item]="userData"
-      (onUpdate)="handleUpdate($event)"
-    ></app-item-detail>
+    <app-item-detail [config]="detailConfig"></app-item-detail>
     <p-toast></p-toast>
   `,
 })
 export class TestItemComponent implements OnInit {
-  userData: Profile | null = null;
-
   detailConfig: ItemDetailConfig = {
     header: 'User Profile',
     isEditable: true,
+    isNew: false,
     supportsAdd: false,
     supportsDelete: false,
+    updateSuccessMessage: 'Profile updated successfully',
     metrics: [
       { icon: 'pi-user', value: '', label: 'Active' },
       { icon: 'pi-clock', value: '3', label: 'months' },
@@ -43,12 +40,19 @@ export class TestItemComponent implements OnInit {
       { key: 'lastName', label: 'Last Name', type: 'text', required: true },
     ],
     dataService: {
+      parseParams: (params: Params) => {
+        return {
+          id: this.authService.getUserId(),
+        };
+      },
       loadItem: (params: QueryOptions) =>
         this.accountService.getAccount(params.id || ''),
-      createItem: (item: UserDto) => this.accountService.createAccount(item),
-      updateItem: (id: string, item: UserDto) =>
-        this.accountService.updateAccount(id, item),
-      deleteItem: (id: string) => this.accountService.deleteAccount(id),
+      createItem: (params: QueryOptions, item: UserDto) =>
+        this.accountService.createAccount(item),
+      updateItem: (params: QueryOptions, item: UserDto) =>
+        this.accountService.updateAccount(params.id || '', item),
+      deleteItem: (params: QueryOptions) =>
+        this.accountService.deleteAccount(params.id || ''),
     },
   };
 
@@ -58,17 +62,5 @@ export class TestItemComponent implements OnInit {
     private accountService: AccountService
   ) {}
 
-  ngOnInit() {
-    this.userData = this.authService.getCurrentProfile();
-  }
-
-  handleUpdate(updatedUser: Profile) {
-    // In a real app, you would call a service to update the user
-    console.log('Updating user:', updatedUser);
-    this.messageService.add({
-      severity: 'success',
-      summary: 'Success',
-      detail: 'User profile updated successfully',
-    });
-  }
+  ngOnInit() {}
 }
