@@ -6,8 +6,6 @@ import { authGuard } from './guards/auth.guard';
 import { ProfileComponent } from './pages/profile/profile.component';
 
 import { UserListComponent } from './pages/users/user-list/user-list.component';
-import { UserDetailComponent } from './pages/users/user-detail/user-detail.component';
-import { SelectUserComponent } from './pages/users/select-user/select-user.component';
 import { NotificationsComponent } from './pages/notifications/notifications.component';
 import { AuthMicrosoftComponent } from './pages/auth/auth-microsoft/auth-microsoft.component';
 import { TestItemComponent } from './pages/test-item/test-item.component';
@@ -43,6 +41,12 @@ export const routes: Routes = [
   {
     path: 'testitem',
     component: TestItemComponent,
+    canActivate: [authGuard],
+  },
+
+  {
+    path: 'users',
+    component: UserListComponent,
     canActivate: [authGuard],
   },
 ];

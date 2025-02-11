@@ -23,6 +23,7 @@ import {
   ApiProperty,
   ApiPropertyOptional,
   ApiHeader,
+  ApiBearerAuth,
 } from '@nestjs/swagger';
 import {
   IsString,
@@ -48,6 +49,7 @@ import { TenantAccess } from '../access/services/tenant-access.service';
 @ApiTags('accounts')
 @Controller('api/v1/account')
 @UseGuards(JwtAuthGuard)
+@ApiBearerAuth('JWT-auth')
 export class AccountController {
   private readonly logger = new Logger(AccountController.name);
 
@@ -87,10 +89,10 @@ export class AccountController {
     }
 
     return this.userAccess.queryUsers({
-      take: query.take,
-      skip: query.skip,
+      take: query.take || 10,
+      skip: query.skip || 0,
       where: tenantId ? { tenants: { id: tenantId } } : query.where,
-      order: query.order,
+      order: query.order || { createdAt: 'DESC' },
     });
   }
 

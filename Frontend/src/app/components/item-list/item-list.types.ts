@@ -17,7 +17,7 @@ export interface ColumnDefinition {
 export interface ItemListDataService<T> {
   parseParams: (params: Params, queryParams: Params) => QueryOptions;
   loadItems(params: QueryOptions): Observable<QueryResult<T>>;
-  deleteItem(id: string): Observable<any>;
+  deleteItem(params: QueryOptions, item: any): Observable<any>;
 }
 
 export interface ItemListConfig {

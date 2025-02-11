@@ -4,7 +4,7 @@ import { Observable } from 'rxjs';
 import { environment } from '../../environments/environment';
 import { BackendService } from './backend.service';
 import { UserDto } from '../dto/user.dto';
-import { ProcessResult, QueryResult } from '../dto/query.dto';
+import { ProcessResult, QueryOptions, QueryResult } from '../dto/query.dto';
 
 @Injectable({
   providedIn: 'root',
@@ -36,8 +36,10 @@ export class AccountService {
     return this.backend.delete<ProcessResult>(`account/${id}`);
   }
 
-  getAccounts(tenantId?: string): Observable<QueryResult<UserDto>> {
-    return this.backend.get<UserDto[]>('account');
+  getAccounts(queryParams: QueryOptions): Observable<QueryResult<UserDto>> {
+    return this.backend.get<UserDto[]>(
+      `account?skip=${queryParams.skip}&take=${queryParams.take}`
+    );
   }
 
   addUserToTenant(tenantId: string, userId: string): Observable<any> {

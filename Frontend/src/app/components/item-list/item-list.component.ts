@@ -9,6 +9,7 @@ import { MessageService } from 'primeng/api';
 import { ToastModule } from 'primeng/toast';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { ConfirmationService } from 'primeng/api';
+import { QueryOptions } from '../../dto/query.dto';
 
 @Component({
   selector: 'app-item-list',
@@ -34,7 +35,7 @@ import { ConfirmationService } from 'primeng/api';
 
     <p-table
       #dt
-      [value]="items"
+      [value]="flatItems"
       [columns]="config.columns"
       [paginator]="true"
       [rows]="10"
@@ -115,8 +116,11 @@ export class ItemListComponent implements OnInit {
   @Input() config!: ItemListConfig;
 
   items: any[] = [];
+  flatItems: any[] = [];
   loading: boolean = false;
   totalRecords: number = 0;
+
+  queryParams: QueryOptions = {};
 
   constructor(
     private router: Router,
@@ -125,21 +129,19 @@ export class ItemListComponent implements OnInit {
     private confirmationService: ConfirmationService
   ) {}
 
-  ngOnInit() {
-    this.loadInitialData();
-  }
+  ngOnInit() {}
 
-  loadInitialData() {
-    const params = this.config.dataService.parseParams(
-      this.route.snapshot.params,
-      this.route.snapshot.queryParams
-    );
-    this.loadData({
-      first: 0,
-      rows: 10,
-      sortField: this.config.defaultSortField,
-    });
-  }
+  // loadInitialData() {
+  //   this.queryParams = this.config.dataService.parseParams(
+  //     this.route.snapshot.params,
+  //     this.route.snapshot.queryParams
+  //   );
+  //   // this.loadData({
+  //   //   first: 0,
+  //   //   rows: 10,
+  //   //   sortField: this.config.defaultSortField,
+  //   // });
+  // }
 
   loadData(event: any) {
     this.loading = true;
@@ -158,6 +160,12 @@ export class ItemListComponent implements OnInit {
     this.config.dataService.loadItems(params).subscribe({
       next: (result) => {
         this.items = result.items;
+
+        this.flatItems = result.items.map((item) => ({
+          ...item,
+          ...item.item,
+        }));
+
         this.totalRecords = result.total;
         this.loading = false;
       },
@@ -185,14 +193,18 @@ export class ItemListComponent implements OnInit {
     this.confirmationService.confirm({
       message: 'Are you sure you want to delete this item?',
       accept: () => {
-        this.config.dataService.deleteItem(item.id).subscribe({
+        this.config.dataService.deleteItem(this.queryParams, item).subscribe({
           next: () => {
             this.messageService.add({
               severity: 'success',
               summary: 'Success',
               detail: 'Item deleted successfully',
             });
-            this.loadInitialData();
+            this.loadData({
+              skip: 0,
+              take: 10,
+              sortField: this.config.defaultSortField,
+            });
           },
           error: (error) => {
             console.error('Error deleting item:', error);
@@ -209,7 +221,7 @@ export class ItemListComponent implements OnInit {
 
   getOptionLabel(col: any, value: any): string {
     if (!col.options) return value;
-    const option = col.options.find((opt) => opt.value === value);
+    const option = col.options.find((opt: any) => opt.value === value);
     return option ? option.label : value;
   }
 

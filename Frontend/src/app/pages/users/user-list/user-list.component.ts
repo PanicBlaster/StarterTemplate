@@ -1,138 +1,59 @@
-import { Component, OnInit, Query } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { ActivatedRoute, RouterModule, Router } from '@angular/router';
-import { TableModule } from 'primeng/table';
-import { ButtonModule } from 'primeng/button';
-import { ToastModule } from 'primeng/toast';
-import { MessageService } from 'primeng/api';
-import { ToolbarModule } from 'primeng/toolbar';
+import { Component } from '@angular/core';
+import { ItemListComponent } from '../../../components/item-list/item-list.component';
+import { ItemListConfig } from '../../../components/item-list/item-list.types';
+import { AuthService } from '../../../services/auth.service';
 import { AccountService } from '../../../services/account.service';
-import { QueryResult, QueryResultItem } from '../../../dto/query.dto';
-import { UserDto } from '../../../dto/user.dto';
 
 @Component({
   selector: 'app-user-list',
   standalone: true,
-  imports: [
-    CommonModule,
-    TableModule,
-    ButtonModule,
-    ToastModule,
-    RouterModule,
-    ToolbarModule,
-  ],
-  providers: [MessageService],
-  template: `
-    <div class="card">
-      <p-toolbar>
-        <div class="p-toolbar-group-start">
-          <p-button
-            icon="pi pi-arrow-left"
-            label="Back"
-            (onClick)="router.navigate(['/home'])"
-            styleClass="mr-2"
-          ></p-button>
-        </div>
-        <div class="p-toolbar-group-end">
-          <p-button
-            label="Select Users"
-            icon="pi pi-users"
-            severity="secondary"
-            [routerLink]="['/tenants', tenantId, 'usersselect']"
-            styleClass="mr-2"
-          ></p-button>
-          <p-button
-            icon="pi pi-plus"
-            label="Add User"
-            [routerLink]="['new']"
-          ></p-button>
-        </div>
-      </p-toolbar>
-
-      <div class="mt-3">
-        <p-table
-          [value]="users.items"
-          [loading]="loading"
-          [paginator]="true"
-          [rows]="10"
-          [showCurrentPageReport]="true"
-          currentPageReportTemplate="Showing {first} to {last} of {totalRecords} users"
-        >
-          <ng-template pTemplate="header">
-            <tr>
-              <th>ID</th>
-              <th>Username</th>
-              <th>Email</th>
-              <th>Actions</th>
-            </tr>
-          </ng-template>
-          <ng-template pTemplate="body" let-user>
-            <tr>
-              <td>{{ user.id }}</td>
-              <td>{{ user.item.username }}</td>
-              <td>{{ user.item.email }}</td>
-              <td>
-                <div class="flex gap-2">
-                  <p-button
-                    icon="pi pi-eye"
-                    severity="secondary"
-                    [routerLink]="[user.id]"
-                    pTooltip="View Details"
-                  ></p-button>
-                  <p-button
-                    icon="pi pi-pencil"
-                    severity="secondary"
-                    [routerLink]="[user.id, 'edit']"
-                    pTooltip="Edit User"
-                  ></p-button>
-                </div>
-              </td>
-            </tr>
-          </ng-template>
-        </p-table>
-      </div>
-    </div>
-    <p-toast></p-toast>
-  `,
+  imports: [ItemListComponent],
+  template: `<app-item-list [config]="listConfig"></app-item-list>`,
 })
-export class UserListComponent implements OnInit {
-  tenantId: string = '';
-  tenantName: string = '';
-  users: QueryResult<UserDto> = {
-    items: [],
-    total: 0,
-    take: 10,
-    skip: 0,
+export class UserListComponent {
+  listConfig: ItemListConfig = {
+    header: 'Users',
+    supportsAdd: true,
+    supportsEdit: true,
+    supportsDelete: true,
+    defaultSortField: 'username',
+    columns: [
+      {
+        field: 'username',
+        header: 'Username',
+        type: 'text',
+        sortable: true,
+      },
+      { field: 'email', header: 'Email', type: 'text', sortable: true },
+      {
+        field: 'firstName',
+        header: 'First Name',
+        type: 'text',
+        sortable: true,
+      },
+      { field: 'lastName', header: 'Last Name', type: 'text', sortable: true },
+
+      {
+        field: 'createdAt',
+        header: 'Created',
+        type: 'date',
+        format: 'short',
+        sortable: true,
+      },
+    ],
+    dataService: {
+      parseParams: (params, queryParams) => ({
+        skip: queryParams['skip'] || 0,
+        take: queryParams['take'] || 10,
+        where: { tenantId: this.authService.getCurrentTenant()?.id },
+      }),
+      loadItems: (params) => this.accountService.getAccounts(params),
+      deleteItem: (params, item) => this.accountService.deleteAccount(item.id),
+    },
   };
-  loading: boolean = true;
 
   constructor(
-    private route: ActivatedRoute,
-    public router: Router,
-    private messageService: MessageService,
-    private accountService: AccountService
+    private accountService: AccountService,
+    private authService: AuthService
   ) {}
-
-  ngOnInit() {
-    this.tenantId = this.route.snapshot.paramMap.get('tenantId') || '';
-    this.loadUsers();
-  }
-
-  private loadUsers() {
-    this.loading = true;
-    this.accountService.getAccounts(this.tenantId).subscribe({
-      next: (data: QueryResult<UserDto>) => {
-        this.users = data;
-        this.loading = false;
-      },
-      error: (error) => {
-        this.messageService.add({
-          severity: 'error',
-          summary: 'Error',
-          detail: 'Failed to load users',
-        });
-        this.loading = false;
-      },
-    });
-  }
 }
