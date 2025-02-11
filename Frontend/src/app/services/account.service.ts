@@ -56,7 +56,7 @@ export class AccountService {
 
   getAccounts(queryParams: QueryOptions): Observable<QueryResult<UserDto>> {
     return this.backend.get<UserDto[]>(
-      `account?skip=${queryParams.skip}&take=${queryParams.take}`
+      `account?skip=${queryParams.skip}&take=${queryParams.take}&sort=${queryParams.order}`
     );
   }
 

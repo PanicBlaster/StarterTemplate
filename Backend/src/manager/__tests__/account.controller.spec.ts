@@ -2,15 +2,11 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { UserAccess } from '../../access/services/user-access.service';
 import { TenantAccess } from '../../access/services/tenant-access.service';
 import { BadRequestException, NotFoundException } from '@nestjs/common';
-import {
-  CreateAccountDto,
-  UpdateAccountDto,
-  ChangePasswordDto,
-} from '../../common/dto/account.dto';
+import { ChangePasswordDto } from '../../common/dto/account.dto';
 import { AccountController } from '../account.controller';
 import { QueryOptionsDto } from 'src/common/dto/query.dto';
 import { HttpService } from '@nestjs/axios';
-import { UserCreateDto } from 'src/common/dto/user.dto';
+import { UserCreateDto, UserDto } from 'src/common/dto/user.dto';
 
 describe('AccountController', () => {
   let controller: AccountController;
@@ -117,7 +113,7 @@ describe('AccountController', () => {
   describe('update', () => {
     it('should update user and return id', async () => {
       const userId = '123';
-      const updateDto: UpdateAccountDto = {
+      const updateDto: UserDto = {
         firstName: 'Updated',
       };
 

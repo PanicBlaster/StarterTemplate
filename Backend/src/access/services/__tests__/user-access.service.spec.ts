@@ -7,10 +7,6 @@ import { User } from '../../entities/user.entity';
 import { UnauthorizedException, NotFoundException } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
 import { TenantAccess } from '../tenant-access.service';
-import {
-  CreateAccountDto,
-  UpdateAccountDto,
-} from '../../../common/dto/account.dto';
 import { UserCreateDto, UserDto } from 'src/common/dto/user.dto';
 
 describe('UserAccess', () => {

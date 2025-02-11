@@ -19,7 +19,7 @@ import {
 import { firstValueFrom } from 'rxjs/internal/firstValueFrom';
 import { HttpService } from '@nestjs/axios';
 import { TenantAccess } from '../access/services/tenant-access.service';
-import { CreateAccountDto } from '../common/dto/account.dto';
+import { UserCreateDto } from 'src/common/dto/user.dto';
 
 @ApiTags('auth')
 @Controller('api/v1/auth')
@@ -79,7 +79,7 @@ export class AuthController {
       throw new BadRequestException('Username already exists');
     }
 
-    const createUserDto: CreateAccountDto = {
+    const createUserDto: UserCreateDto = {
       username: signupDto.username,
       password: signupDto.password,
       email: signupDto.email,

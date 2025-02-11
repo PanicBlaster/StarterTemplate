@@ -42,7 +42,7 @@ import {
   ChangePasswordDto,
 } from '../common/dto/account.dto';
 import { TenantAccess } from '../access/services/tenant-access.service';
-import { UserCreateDto, UserDto } from 'src/common/dto/user.dto';
+import { UserCreateDto, UserDto } from '../common/dto/user.dto';
 
 @ApiTags('accounts')
 @Controller('api/v1/account')
