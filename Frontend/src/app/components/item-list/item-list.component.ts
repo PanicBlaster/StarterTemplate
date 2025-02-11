@@ -131,18 +131,6 @@ export class ItemListComponent implements OnInit {
 
   ngOnInit() {}
 
-  // loadInitialData() {
-  //   this.queryParams = this.config.dataService.parseParams(
-  //     this.route.snapshot.params,
-  //     this.route.snapshot.queryParams
-  //   );
-  //   // this.loadData({
-  //   //   first: 0,
-  //   //   rows: 10,
-  //   //   sortField: this.config.defaultSortField,
-  //   // });
-  // }
-
   loadData(event: any) {
     this.loading = true;
     const params = this.config.dataService.parseParams(

@@ -119,7 +119,7 @@ export class ItemDetailComponent implements OnInit {
   ) {}
 
   ngOnInit() {
-    this.route.queryParams.subscribe((params) => {
+    this.route.params.subscribe((params) => {
       this.query = this.config.dataService.parseParams(
         params,
         this.route.snapshot.queryParams
@@ -155,7 +155,7 @@ export class ItemDetailComponent implements OnInit {
             this.messageService.add({
               severity: 'success',
               summary: 'Success',
-              detail: 'Profile updated successfully',
+              detail: this.config.updateSuccessMessage,
             });
             this.onUpdate.emit(this.editingItem);
           },
@@ -177,7 +177,7 @@ export class ItemDetailComponent implements OnInit {
             this.messageService.add({
               severity: 'success',
               summary: 'Success',
-              detail: 'Profile updated successfully',
+              detail: this.config.updateSuccessMessage,
             });
             this.onUpdate.emit(this.editingItem);
           },

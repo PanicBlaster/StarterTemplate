@@ -118,6 +118,12 @@ The application uses the following common imports:
   ],
 ```
 
+# AI Generation
+
+List pages should be generated like the user list page. List pages should use the item-list component.
+
+Detail pages should be generated like the user detail page. Detail pages should use the item-detail component.
+
 <p align="center">
   Powered by <a href="#">Panic Blaster</a> 🚀
 </p>

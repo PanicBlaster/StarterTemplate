@@ -1,217 +1,58 @@
-import { Component, OnInit } from '@angular/core';
+import { Component } from '@angular/core';
+import { ItemDetailComponent } from '../../../components/item-detail/item-detail.component';
+import { ItemDetailConfig } from '../../../components/item-detail/item-detail.types';
+import { AuthService } from '../../../services/auth.service';
+import { AccountService } from '../../../services/account.service';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
-import { ActivatedRoute, RouterModule, Router } from '@angular/router';
-import { ButtonModule } from 'primeng/button';
-import { InputTextModule } from 'primeng/inputtext';
-import { ToolbarModule } from 'primeng/toolbar';
 import { ToastModule } from 'primeng/toast';
 import { MessageService } from 'primeng/api';
-import { AccountService } from '../../../services/account.service';
-import { UserDto } from '../../../dto/user.dto';
-
 @Component({
   selector: 'app-user-detail',
   standalone: true,
-  imports: [
-    CommonModule,
-    FormsModule,
-    ButtonModule,
-    InputTextModule,
-    ToolbarModule,
-    ToastModule,
-    RouterModule,
-  ],
+  imports: [CommonModule, ItemDetailComponent, ToastModule],
   providers: [MessageService],
-  template: `
-    <div class="card">
-      <h2 class="mb-3">{{ isEditing ? 'Edit User' : 'User Details' }}</h2>
-
-      <p-toolbar>
-        <div class="p-toolbar-group-start">
-          <p-button
-            icon="pi pi-arrow-left"
-            label="Back"
-            (onClick)="router.navigate(['..'])"
-            styleClass="mr-2"
-          ></p-button>
-        </div>
-        <div class="p-toolbar-group-end">
-          <p-button
-            label="Add to Tenant"
-            icon="pi pi-plus"
-            severity="secondary"
-            styleClass="mr-2"
-            (onClick)="addToTenant()"
-          ></p-button>
-          <p-button
-            *ngIf="!isEditing"
-            label="Edit"
-            icon="pi pi-pencil"
-            (onClick)="toggleEdit()"
-            styleClass="mr-2"
-          ></p-button>
-          <p-button
-            *ngIf="isEditing"
-            label="Save"
-            icon="pi pi-save"
-            (onClick)="saveUser()"
-            [loading]="saving"
-          ></p-button>
-        </div>
-      </p-toolbar>
-
-      <div class="formgrid grid mt-3">
-        <div class="field col-12 md:col-6">
-          <label for="username">Username</label>
-          <input
-            id="username"
-            type="text"
-            pInputText
-            [(ngModel)]="user.username"
-            class="w-full"
-            readonly
-          />
-        </div>
-        <div class="field col-12 md:col-6">
-          <label for="email">Email</label>
-          <input
-            id="email"
-            type="email"
-            pInputText
-            [(ngModel)]="user.email"
-            class="w-full"
-            [readonly]="!isEditing"
-          />
-        </div>
-
-        <div class="field col-12 md:col-6">
-          <label for="firstName">First Name</label>
-          <input
-            id="firstName"
-            type="text"
-            pInputText
-            [(ngModel)]="user.firstName"
-            class="w-full"
-            [readonly]="!isEditing"
-          />
-        </div>
-        <div class="field col-12 md:col-6">
-          <label for="lastName">Last Name</label>
-          <input
-            id="lastName"
-            type="text"
-            pInputText
-            [(ngModel)]="user.lastName"
-            class="w-full"
-            [readonly]="!isEditing"
-          />
-        </div>
-
-        <div class="field col-12 md:col-6">
-          <label for="role">Role</label>
-          <input
-            id="role"
-            type="text"
-            pInputText
-            [(ngModel)]="user.role"
-            class="w-full"
-            [readonly]="!isEditing"
-          />
-        </div>
-      </div>
-    </div>
-    <p-toast></p-toast>
-  `,
-  styles: [
-    `
-      :host ::ng-deep {
-        .field {
-          margin-bottom: 1.5rem;
-        }
-        label {
-          display: block;
-          margin-bottom: 0.5rem;
-        }
-      }
-    `,
-  ],
+  template: `<app-item-detail [config]="detailConfig"></app-item-detail>`,
 })
-export class UserDetailComponent implements OnInit {
-  id: string = '';
-  user: UserDto = {
-    username: '',
-    firstName: '',
-    lastName: '',
-    email: '',
-    createdAt: new Date(),
-    updatedAt: new Date(),
-    role: '',
-    source: '',
-    tenants: [],
+export class UserDetailComponent {
+  detailConfig: ItemDetailConfig = {
+    header: 'User Details',
+    isEditable: true,
+    isNew: false,
+    supportsAdd: false,
+    supportsDelete: true,
+    updateSuccessMessage: 'User updated successfully',
+    formLayout: [
+      { key: 'username', label: 'Username', type: 'text', required: true },
+      { key: 'email', label: 'Email', type: 'text', required: true },
+      { key: 'firstName', label: 'First Name', type: 'text', required: true },
+      { key: 'lastName', label: 'Last Name', type: 'text', required: true },
+      {
+        key: 'role',
+        label: 'Role',
+        type: 'select',
+        required: true,
+        options: [
+          { label: 'Admin', value: 'admin' },
+          { label: 'User', value: 'user' },
+        ],
+      },
+    ],
+    dataService: {
+      parseParams: (params, queryParams) => ({
+        id: params['id'],
+        where: { tenantId: this.authService.getCurrentTenant()?.id },
+      }),
+      loadItem: (params) => this.accountService.getAccount(params.id || ''),
+      createItem: (params, item) => this.accountService.createAccount(item),
+      updateItem: (params, item) =>
+        this.accountService.updateAccount(params.id || '', item),
+      deleteItem: (params) =>
+        this.accountService.deleteAccount(params.id || ''),
+    },
   };
-  saving: boolean = false;
-  isEditing: boolean = false;
 
   constructor(
-    private route: ActivatedRoute,
-    public router: Router,
     private accountService: AccountService,
-    private messageService: MessageService
+    private authService: AuthService
   ) {}
-
-  ngOnInit() {
-    this.isEditing = this.router.url.endsWith('/edit');
-    const userId = this.route.snapshot.paramMap.get('id');
-    if (userId) {
-      this.loadUser(userId);
-    }
-  }
-
-  private loadUser(id: string) {
-    this.accountService.getAccount(id).subscribe({
-      next: (data) => {
-        this.user = data;
-      },
-      error: () => {
-        this.messageService.add({
-          severity: 'error',
-          summary: 'Error',
-          detail: 'Failed to load user',
-        });
-      },
-    });
-  }
-
-  saveUser() {
-    this.saving = true;
-    this.accountService.updateAccount(this.id, this.user).subscribe({
-      next: () => {
-        this.messageService.add({
-          severity: 'success',
-          summary: 'Success',
-          detail: 'User updated successfully',
-        });
-        this.saving = false;
-      },
-      error: () => {
-        this.messageService.add({
-          severity: 'error',
-          summary: 'Error',
-          detail: 'Failed to update user',
-        });
-        this.saving = false;
-      },
-    });
-  }
-
-  addToTenant() {
-    // TODO: Implement add to tenant functionality
-    console.log('Add to tenant clicked');
-  }
-
-  toggleEdit() {
-    this.isEditing = true;
-    this.router.navigate(['edit'], { relativeTo: this.route });
-  }
 }

@@ -9,6 +9,7 @@ import { UserListComponent } from './pages/users/user-list/user-list.component';
 import { NotificationsComponent } from './pages/notifications/notifications.component';
 import { AuthMicrosoftComponent } from './pages/auth/auth-microsoft/auth-microsoft.component';
 import { TestItemComponent } from './pages/test-item/test-item.component';
+import { UserDetailComponent } from './pages/users/user-detail/user-detail.component';
 
 export const routes: Routes = [
   { path: 'auth', component: AuthComponent },
@@ -46,7 +47,12 @@ export const routes: Routes = [
 
   {
     path: 'users',
-    component: UserListComponent,
+    children: [
+      { path: '', component: UserListComponent },
+      { path: 'new', component: UserDetailComponent },
+      { path: ':id', component: UserDetailComponent },
+      { path: ':id/edit', component: UserDetailComponent },
+    ],
     canActivate: [authGuard],
   },
 ];
