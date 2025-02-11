@@ -28,6 +28,7 @@ import { QueryOptions } from '../../dto/query.dto';
       [header]="config.header"
       [supportsAdd]="config.supportsAdd || false"
       [supportsEdit]="false"
+      [canMockData]="false"
       [actions]="config.customToolbarItems || []"
       [metrics]="config.metrics"
       (onAdd)="handleAdd()"

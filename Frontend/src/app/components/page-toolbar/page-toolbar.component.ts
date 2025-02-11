@@ -4,6 +4,7 @@ import { ButtonModule } from 'primeng/button';
 import { ToolbarModule } from 'primeng/toolbar';
 import { ToolbarAction, Metric } from './page-toolbar.types';
 import { FluidModule } from 'primeng/fluid';
+import { environment } from '../../../environments/environment';
 @Component({
   selector: 'app-page-toolbar',
   standalone: true,
@@ -40,6 +41,13 @@ import { FluidModule } from 'primeng/fluid';
 
           <!-- Edit mode actions -->
           <ng-container *ngIf="supportsEdit">
+            <p-button
+              *ngIf="allowMocking && isEditing"
+              icon="pi pi-cog"
+              [label]="isDesktop ? 'Mock Data' : undefined"
+              (onClick)="onMockDataClick()"
+              styleClass="p-button-secondary"
+            ></p-button>
             <p-button
               *ngIf="!isEditing"
               icon="pi pi-pencil"
@@ -162,17 +170,27 @@ export class PageToolbarComponent {
   @Input() supportsEdit: boolean = false;
   @Input() supportsAdd: boolean = false;
   @Input() isEditing: boolean = false;
+  @Input() canMockData: boolean = false;
   @Output() onEdit: EventEmitter<void> = new EventEmitter<void>();
   @Output() onSave: EventEmitter<void> = new EventEmitter<void>();
   @Output() onCancel: EventEmitter<void> = new EventEmitter<void>();
   @Output() onAdd: EventEmitter<void> = new EventEmitter<void>();
-
+  @Output() onMockData: EventEmitter<void> = new EventEmitter<void>();
   isDesktop: boolean = window.innerWidth > 768;
+
+  allowMocking: boolean = false;
 
   constructor() {
     window.addEventListener('resize', () => {
       this.isDesktop = window.innerWidth > 768;
     });
+
+    this.allowMocking = true; //this.canMockData && environment.mockingEnabled;
+    console.log('Page toolbar Constructor');
+  }
+
+  ngOnInit() {
+    console.log('Page toolbar ngOnInit');
   }
 
   onAddClick() {
@@ -189,5 +207,10 @@ export class PageToolbarComponent {
 
   onCancelClick() {
     this.onCancel.emit();
+  }
+
+  onMockDataClick() {
+    console.log('Mock data toolbar');
+    this.onMockData.emit();
   }
 }

@@ -10,8 +10,10 @@ import { ItemDetailConfig, FormField } from './item-detail.types';
 import { ToolbarAction } from '../page-toolbar/page-toolbar.types';
 import { FluidModule } from 'primeng/fluid';
 import { MessageService } from 'primeng/api';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { QueryOptions } from '../../dto/query.dto';
+
+declare const location: any;
 
 @Component({
   selector: 'app-item-detail',
@@ -38,6 +40,7 @@ import { QueryOptions } from '../../dto/query.dto';
       (onSave)="saveChanges()"
       (onCancel)="cancelEdit()"
       (onAdd)="createNew()"
+      (onMockData)="handleMockData()"
     ></app-page-toolbar>
 
     <p-fluid>
@@ -143,10 +146,14 @@ export class ItemDetailComponent implements OnInit {
 
   constructor(
     private messageService: MessageService,
-    private route: ActivatedRoute
-  ) {}
+    private route: ActivatedRoute,
+    private router: Router
+  ) {
+    console.log('Item detail Constructor');
+  }
 
   ngOnInit() {
+    console.log('Item detail ngOnInit');
     this.route.params.subscribe((params) => {
       this.query = this.config.dataService.parseParams(
         params,
@@ -162,8 +169,11 @@ export class ItemDetailComponent implements OnInit {
 
   cancelEdit() {
     this.isEditing = false;
-
-    this.loadItem();
+    if (this.query.id === 'new') {
+      this.router.navigate(['../'], { relativeTo: this.route });
+    } else {
+      this.loadItem();
+    }
   }
 
   loadItem() {
@@ -174,6 +184,19 @@ export class ItemDetailComponent implements OnInit {
       if (this.query.id === 'new') {
         this.isEditing = true;
       }
+    });
+  }
+
+  handleMockData() {
+    console.log('Mock data');
+
+    // walk through item and set reasonable values based on form field type and property name
+    this.config.formLayout.forEach((field) => {
+      this.editingItem[field.key] = this.getRandomValue(
+        field.type,
+        field.key,
+        field.options
+      );
     });
   }
 
@@ -228,5 +251,56 @@ export class ItemDetailComponent implements OnInit {
   createNew() {
     this.editingItem = {};
     this.isEditing = true;
+  }
+
+  getRandomValue(type: string, field: string, options?: any[]) {
+    switch (type) {
+      case 'text':
+        if (field === 'username') {
+          return this.getRandomUsername();
+        }
+        if (field === 'email') {
+          return this.getRandomEmail();
+        }
+        if (field === 'password') {
+          return this.getRandomPassword();
+        }
+        return 'Test ' + field;
+      case 'number':
+        return this.getRandomNumber();
+      case 'date':
+        return this.getRandomDate();
+      case 'boolean':
+        return this.getRandomBoolean();
+      case 'select':
+        return options?.[Math.floor(Math.random() * (options?.length || 1))]
+          ?.value;
+      default:
+        return null;
+    }
+  }
+
+  getRandomEmail() {
+    return 'testuser' + Math.floor(Math.random() * 1000000) + '@example.com';
+  }
+
+  getRandomUsername() {
+    return 'testuser' + Math.floor(Math.random() * 1000000);
+  }
+
+  getRandomPassword() {
+    return 'password' + Math.floor(Math.random() * 1000000);
+  }
+
+  getRandomDate() {
+    return new Date();
+  }
+
+  getRandomBoolean() {
+    return Math.random() < 0.5;
+  }
+
+  getRandomNumber() {
+    return Math.floor(Math.random() * 100);
   }
 }

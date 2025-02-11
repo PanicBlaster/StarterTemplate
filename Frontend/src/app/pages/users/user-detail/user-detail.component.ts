@@ -22,7 +22,6 @@ export class UserDetailComponent {
     updateSuccessMessage: 'User updated successfully',
     formLayout: [
       { key: 'username', label: 'Username', type: 'text', required: true },
-
       {
         key: 'password',
         label: 'Password',
@@ -44,6 +43,13 @@ export class UserDetailComponent {
         ],
       },
     ],
+    customToolbarItems: [
+      {
+        label: 'Reset Password',
+        icon: 'pi pi-lock',
+        onClick: () => this.resetPassword(),
+      },
+    ],
     dataService: {
       parseParams: (params, queryParams) => ({
         id: params['id'],
@@ -62,5 +68,15 @@ export class UserDetailComponent {
   constructor(
     private accountService: AccountService,
     private authService: AuthService
-  ) {}
+  ) {
+    console.log('User detail Constructor');
+  }
+
+  ngOnInit() {
+    console.log('User detail ngOnInit');
+  }
+
+  resetPassword() {
+    console.log('Reset password');
+  }
 }
