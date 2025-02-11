@@ -23,10 +23,7 @@ import {
   QueryResult,
   QueryResultItem,
 } from '../../common/dto/query.dto';
-import {
-  CreateAccountDto,
-  UpdateAccountDto,
-} from '../../common/dto/account.dto';
+
 import { UserCreateDto, UserDto } from '../../common/dto/user.dto';
 
 @Injectable()
@@ -46,7 +43,10 @@ export class UserAccess {
       lastName: user.lastName,
       role: user.role,
       source: user.source,
-      tenants: user.tenants,
+      tenants: user.tenants.map((tenant) => ({
+        id: tenant.id,
+        name: tenant.name,
+      })),
       createdAt: user.createdAt,
       updatedAt: user.updatedAt,
     };

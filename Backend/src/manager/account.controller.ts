@@ -38,14 +38,11 @@ import { QueryOptionsDto, QueryResult } from '../common/dto/query.dto';
 import { firstValueFrom } from 'rxjs';
 import { JwtAuthGuard } from '../auth/jwt.guard';
 import {
-  CreateAccountDto,
-  UpdateAccountDto,
-  AccountQueryDto,
   AddUserToTenantDto,
   ChangePasswordDto,
 } from '../common/dto/account.dto';
 import { TenantAccess } from '../access/services/tenant-access.service';
-import { UserCreateDto } from 'src/common/dto/user.dto';
+import { UserCreateDto, UserDto } from 'src/common/dto/user.dto';
 
 @ApiTags('accounts')
 @Controller('api/v1/account')
@@ -135,7 +132,7 @@ export class AccountController {
   @ApiResponse({ status: 404, description: 'Account not found' })
   async update(
     @Param('id') id: string,
-    @Body(ValidationPipe) updateAccountDto: UpdateAccountDto
+    @Body(ValidationPipe) updateAccountDto: UserDto
   ) {
     await this.userAccess.upsertUser(updateAccountDto, id);
     return {

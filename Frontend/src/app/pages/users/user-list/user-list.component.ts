@@ -25,13 +25,6 @@ export class UserListComponent {
         sortable: true,
       },
       { field: 'email', header: 'Email', type: 'text', sortable: true },
-      {
-        field: 'firstName',
-        header: 'First Name',
-        type: 'text',
-        sortable: true,
-      },
-      { field: 'lastName', header: 'Last Name', type: 'text', sortable: true },
 
       {
         field: 'createdAt',

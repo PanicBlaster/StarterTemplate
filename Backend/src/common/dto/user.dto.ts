@@ -47,12 +47,12 @@ export class UserDto {
   tenants?: TenantDto[];
 
   @ApiProperty()
-  @IsDateString()
+  @IsDate()
   @IsOptional()
-  createdAt?: string;
+  createdAt?: Date;
 
   @ApiProperty()
-  @IsDateString()
+  @IsDate()
   @IsOptional()
   updatedAt?: Date;
 }
