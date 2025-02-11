@@ -17,12 +17,19 @@ export class UserDetailComponent {
   detailConfig: ItemDetailConfig = {
     header: 'User Details',
     isEditable: true,
-    isNew: false,
     supportsAdd: false,
     supportsDelete: true,
     updateSuccessMessage: 'User updated successfully',
     formLayout: [
       { key: 'username', label: 'Username', type: 'text', required: true },
+
+      {
+        key: 'password',
+        label: 'Password',
+        type: 'password',
+        required: true,
+        newOnly: true,
+      },
       { key: 'email', label: 'Email', type: 'text', required: true },
       { key: 'firstName', label: 'First Name', type: 'text', required: true },
       { key: 'lastName', label: 'Last Name', type: 'text', required: true },
@@ -41,6 +48,7 @@ export class UserDetailComponent {
       parseParams: (params, queryParams) => ({
         id: params['id'],
         where: { tenantId: this.authService.getCurrentTenant()?.id },
+        isNew: params['id'] === 'new',
       }),
       loadItem: (params) => this.accountService.getAccount(params.id || ''),
       createItem: (params, item) => this.accountService.createAccount(item),

@@ -45,6 +45,7 @@ import {
   ChangePasswordDto,
 } from '../common/dto/account.dto';
 import { TenantAccess } from '../access/services/tenant-access.service';
+import { UserCreateDto } from 'src/common/dto/user.dto';
 
 @ApiTags('accounts')
 @Controller('api/v1/account')
@@ -118,7 +119,7 @@ export class AccountController {
   @Post()
   @ApiOperation({ summary: 'Create a new account' })
   @ApiResponse({ status: 201, description: 'Account created successfully' })
-  async create(@Body(ValidationPipe) createAccountDto: CreateAccountDto) {
+  async create(@Body(ValidationPipe) createAccountDto: UserCreateDto) {
     const id = await this.userAccess.upsertUser(createAccountDto);
     return {
       id,

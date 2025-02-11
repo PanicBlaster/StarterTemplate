@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { Observable, of } from 'rxjs';
 import { environment } from '../../environments/environment';
 import { BackendService } from './backend.service';
 import { UserDto } from '../dto/user.dto';
@@ -21,7 +21,23 @@ export class AccountService {
   }
 
   getAccount(id: string): Observable<UserDto> {
-    return this.backend.get<UserDto>(`account/${id}`);
+    if (id === 'new') {
+      return of({
+        id: 'new',
+        username: '',
+        email: '',
+        tenantId: '',
+        role: '',
+        firstName: '',
+        lastName: '',
+        source: '',
+        tenants: [],
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      });
+    } else {
+      return this.backend.get<UserDto>(`account/${id}`);
+    }
   }
 
   updateAccount(id: string, user: UserDto): Observable<ProcessResult> {
@@ -29,6 +45,8 @@ export class AccountService {
   }
 
   createAccount(user: UserDto): Observable<ProcessResult> {
+    user.createdAt = undefined;
+    user.updatedAt = undefined;
     return this.backend.post<ProcessResult>('account', user);
   }
 

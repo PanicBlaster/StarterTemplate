@@ -8,6 +8,6 @@ export interface UserDto {
   role: string;
   source: string;
   tenants: TenantInfo[];
-  createdAt: Date;
-  updatedAt: Date;
+  createdAt?: Date;
+  updatedAt?: Date;
 }

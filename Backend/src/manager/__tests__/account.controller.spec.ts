@@ -10,6 +10,7 @@ import {
 import { AccountController } from '../account.controller';
 import { QueryOptionsDto } from 'src/common/dto/query.dto';
 import { HttpService } from '@nestjs/axios';
+import { UserCreateDto } from 'src/common/dto/user.dto';
 
 describe('AccountController', () => {
   let controller: AccountController;
@@ -93,7 +94,7 @@ describe('AccountController', () => {
 
   describe('create', () => {
     it('should create user and return id', async () => {
-      const createDto: CreateAccountDto = {
+      const createDto: UserCreateDto = {
         username: 'newuser',
         password: 'password123',
         email: 'new@example.com',

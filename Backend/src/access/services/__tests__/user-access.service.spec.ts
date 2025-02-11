@@ -11,7 +11,7 @@ import {
   CreateAccountDto,
   UpdateAccountDto,
 } from '../../../common/dto/account.dto';
-import { UserDto } from 'src/common/dto/user.dto';
+import { UserCreateDto, UserDto } from 'src/common/dto/user.dto';
 
 describe('UserAccess', () => {
   let service: UserAccess;
@@ -147,12 +147,18 @@ describe('UserAccess', () => {
 
   describe('upsertUser', () => {
     it('should create a new user and return id', async () => {
-      const createUserDto: CreateAccountDto = {
+      const createUserDto: UserCreateDto = {
         username: 'newuser',
         password: 'password123',
         email: 'new@example.com',
         firstName: 'New',
         lastName: 'User',
+        tenantId: '1',
+        role: 'user',
+        source: 'LOCAL',
+        tenants: [],
+        createdAt: new Date('2024-01-01'),
+        updatedAt: new Date('2024-01-01'),
       };
 
       const savedUser = { ...mockUser, ...createUserDto, id: 'new-id' };
@@ -167,7 +173,7 @@ describe('UserAccess', () => {
     });
 
     it('should update existing user and return id', async () => {
-      const updateUserDto: UpdateAccountDto = {
+      const updateUserDto: UserDto = {
         firstName: 'Updated',
       };
 

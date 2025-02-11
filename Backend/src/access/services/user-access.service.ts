@@ -27,7 +27,7 @@ import {
   CreateAccountDto,
   UpdateAccountDto,
 } from '../../common/dto/account.dto';
-import { UserDto } from '../../common/dto/user.dto';
+import { UserCreateDto, UserDto } from '../../common/dto/user.dto';
 
 @Injectable()
 export class UserAccess {
@@ -89,7 +89,7 @@ export class UserAccess {
   }
 
   async upsertUser(
-    data: CreateAccountDto | UpdateAccountDto,
+    data: UserCreateDto | UserDto,
     id?: string
   ): Promise<string> {
     if (id) {
@@ -158,7 +158,11 @@ export class UserAccess {
       accessToken: token,
       user: {
         id: user.id,
-        ...userDto,
+        username: user.username || '',
+        email: user.email || '',
+        role: user.role || '',
+        lastName: user.lastName || '',
+        firstName: user.firstName || '',
         tenants: user.tenants.map((tenant) => ({
           id: tenant.id,
           name: tenant.name,

@@ -3,7 +3,14 @@ import { ToolbarAction, Metric } from '../page-toolbar/page-toolbar.types';
 import { ProcessResult, QueryOptions } from '../../dto/query.dto';
 import { Params } from '@angular/router';
 
-export type FormFieldType = 'text' | 'number' | 'date' | 'select';
+export type FormFieldType =
+  | 'text'
+  | 'number'
+  | 'date'
+  | 'select'
+  | 'password'
+  | 'email'
+  | 'editor';
 
 export interface SelectOption {
   label: string;
@@ -17,6 +24,7 @@ export interface FormField {
   options?: SelectOption[]; // For select fields
   required?: boolean;
   disabled?: boolean;
+  newOnly?: boolean;
 }
 
 export interface ItemDetailDataService<T> {
@@ -30,7 +38,6 @@ export interface ItemDetailDataService<T> {
 export interface ItemDetailConfig {
   header: string;
   isEditable: boolean;
-  isNew: boolean;
   supportsAdd: boolean;
   supportsDelete: boolean;
   customToolbarItems?: ToolbarAction[];

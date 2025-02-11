@@ -25,7 +25,6 @@ export class TestItemComponent implements OnInit {
   detailConfig: ItemDetailConfig = {
     header: 'User Profile',
     isEditable: true,
-    isNew: false,
     supportsAdd: false,
     supportsDelete: false,
     updateSuccessMessage: 'Profile updated successfully',

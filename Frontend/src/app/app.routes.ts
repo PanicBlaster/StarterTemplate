@@ -49,9 +49,7 @@ export const routes: Routes = [
     path: 'users',
     children: [
       { path: '', component: UserListComponent },
-      { path: 'new', component: UserDetailComponent },
       { path: ':id', component: UserDetailComponent },
-      { path: ':id/edit', component: UserDetailComponent },
     ],
     canActivate: [authGuard],
   },

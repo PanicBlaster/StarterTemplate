@@ -50,7 +50,10 @@ import { QueryOptions } from '../../dto/query.dto';
 
           <!-- Text Input -->
           <input
-            *ngIf="field.type === 'text'"
+            *ngIf="
+              field.type === 'text' &&
+              (!field.newOnly || this.query.isNew || field.newOnly == undefined)
+            "
             [id]="field.key"
             type="text"
             pInputText
@@ -59,9 +62,26 @@ import { QueryOptions } from '../../dto/query.dto';
             [required]="field.required || false"
           />
 
+          <!-- Password Input -->
+          <input
+            *ngIf="
+              field.type === 'password' &&
+              (!field.newOnly || this.query.isNew || field.newOnly == undefined)
+            "
+            [id]="field.key"
+            type="password"
+            pInputText
+            [(ngModel)]="editingItem[field.key]"
+            [readonly]="!isEditing"
+            [required]="field.required || false"
+          />
+
           <!-- Number Input -->
           <p-inputNumber
-            *ngIf="field.type === 'number'"
+            *ngIf="
+              field.type === 'number' &&
+              (!field.newOnly || this.query.isNew || field.newOnly == undefined)
+            "
             [id]="field.key"
             [(ngModel)]="editingItem[field.key]"
             [readonly]="!isEditing"
@@ -70,7 +90,10 @@ import { QueryOptions } from '../../dto/query.dto';
 
           <!-- Date Input -->
           <p-datePicker
-            *ngIf="field.type === 'date'"
+            *ngIf="
+              field.type === 'date' &&
+              (!field.newOnly || this.query.isNew || field.newOnly == undefined)
+            "
             [id]="field.key"
             [(ngModel)]="editingItem[field.key]"
             [required]="field.required || false"
@@ -78,12 +101,17 @@ import { QueryOptions } from '../../dto/query.dto';
 
           <!-- Select Input -->
           <p-dropdown
-            *ngIf="field.type === 'select'"
+            *ngIf="
+              field.type === 'select' &&
+              (!field.newOnly || this.query.isNew || field.newOnly == undefined)
+            "
             [id]="field.key"
             [(ngModel)]="editingItem[field.key]"
             [options]="field.options"
             [disabled]="!isEditing"
             [required]="field.required || false"
+            optionLabel="label"
+            optionValue="value"
           ></p-dropdown>
         </div>
       </div>
@@ -142,11 +170,15 @@ export class ItemDetailComponent implements OnInit {
     this.config.dataService.loadItem(this.query).subscribe((item) => {
       this.item = item;
       this.editingItem = { ...this.item };
+
+      if (this.query.id === 'new') {
+        this.isEditing = true;
+      }
     });
   }
 
   saveChanges() {
-    if (this.config.isNew) {
+    if (this.query.id === 'new') {
       this.config.dataService
         .createItem(this.query, this.editingItem)
         .subscribe({

@@ -12,6 +12,7 @@ export interface QueryResult<T> {
 
 export interface QueryOptions {
   id?: string;
+  isNew?: boolean;
   take?: number;
   skip?: number;
   where?: Record<string, any>;

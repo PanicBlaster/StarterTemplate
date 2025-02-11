@@ -5,6 +5,7 @@ import {
   IsOptional,
   IsArray,
   IsDate,
+  IsDateString,
 } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 import { TenantDto } from './tenant.dto';
@@ -12,43 +13,58 @@ import { TenantDto } from './tenant.dto';
 export class UserDto {
   @ApiProperty()
   @IsString()
-  @IsNotEmpty()
-  username: string;
+  @IsOptional()
+  username?: string;
 
   @ApiProperty()
   @IsEmail()
-  @IsNotEmpty()
-  email: string;
+  @IsOptional()
+  email?: string;
 
   @ApiProperty()
   @IsString()
-  @IsNotEmpty()
-  firstName: string;
+  @IsOptional()
+  firstName?: string;
 
   @ApiProperty()
   @IsString()
-  @IsNotEmpty()
-  lastName: string;
+  @IsOptional()
+  lastName?: string;
 
   @ApiProperty()
   @IsString()
-  @IsNotEmpty()
-  role: string;
+  @IsOptional()
+  role?: string;
 
   @ApiProperty()
   @IsString()
-  source: string;
+  @IsOptional()
+  source?: string;
 
   @ApiProperty({ type: [TenantDto] })
   @IsArray()
   @IsOptional()
-  tenants: TenantDto[];
+  tenants?: TenantDto[];
 
   @ApiProperty()
-  @IsDate()
-  createdAt: Date;
+  @IsDateString()
+  @IsOptional()
+  createdAt?: string;
 
   @ApiProperty()
-  @IsDate()
-  updatedAt: Date;
+  @IsDateString()
+  @IsOptional()
+  updatedAt?: Date;
+}
+
+export class UserCreateDto extends UserDto {
+  @ApiProperty()
+  @IsString()
+  @IsOptional()
+  tenantId?: string;
+
+  @ApiProperty()
+  @IsString()
+  @IsNotEmpty()
+  password: string;
 }
