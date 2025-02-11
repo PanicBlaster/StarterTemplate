@@ -49,7 +49,13 @@ declare const location: any;
           *ngFor="let field of config.formLayout"
           class="col-12 md:col-6 field"
         >
-          <label [for]="field.key">{{ field.label }}</label>
+          <label
+            *ngIf="
+              !field.newOnly || this.query.isNew || field.newOnly == undefined
+            "
+            [for]="field.key"
+            >{{ field.label }}</label
+          >
 
           <!-- Text Input -->
           <input
