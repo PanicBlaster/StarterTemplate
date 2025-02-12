@@ -40,6 +40,7 @@ export interface ItemDetailConfig {
   isEditable: boolean;
   supportsAdd: boolean;
   supportsDelete: boolean;
+  breadcrumbField?: string;
   customToolbarItems?: ToolbarAction[];
   metrics?: Metric[];
   formLayout: FormField[];

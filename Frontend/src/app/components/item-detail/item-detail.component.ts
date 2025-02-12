@@ -193,7 +193,11 @@ export class ItemDetailComponent implements OnInit {
         this.isEditing = true;
       }
 
-      this.breadcrumbService.updateLastBreadcrumbLabel(this.item.email);
+      if (this.config.breadcrumbField) {
+        this.breadcrumbService.updateLastBreadcrumbLabel(
+          this.item[this.config.breadcrumbField]
+        );
+      }
     });
   }
 

@@ -21,6 +21,7 @@ export class UserDetailComponent {
     supportsAdd: false,
     supportsDelete: true,
     updateSuccessMessage: 'User updated successfully',
+    breadcrumbField: 'username',
     formLayout: [
       { key: 'username', label: 'Username', type: 'text', required: true },
       {
