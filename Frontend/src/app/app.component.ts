@@ -12,6 +12,10 @@ import { BreadcrumbModule } from 'primeng/breadcrumb';
 import { NavigationEnd } from '@angular/router';
 import { filter, map, Observable, of } from 'rxjs';
 import { BreadcrumbService } from './services/breadcrumb.service';
+import {
+  DisplayMode,
+  getDisplayMode,
+} from './components/item-detail/item-detail.types';
 
 export interface BreadcrumbItem {
   label: string;
@@ -44,6 +48,7 @@ export class AppComponent implements OnInit {
   version = '0.0.0'; // Default version
   breadcrumbItems: MenuItem[] = [];
   home: MenuItem = { icon: 'pi pi-home', routerLink: '/' };
+  displayMode: DisplayMode = getDisplayMode();
 
   constructor(
     public authService: AuthService,
@@ -57,6 +62,11 @@ export class AppComponent implements OnInit {
       this.updateProfileItems();
     });
     this.version = (window as any).__APP_VERSION__ || '0.0.0';
+
+    // Update resize listener
+    window.addEventListener('resize', () => {
+      this.displayMode = getDisplayMode();
+    });
   }
 
   ngOnInit() {

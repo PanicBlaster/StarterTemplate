@@ -39,10 +39,13 @@
         <ng-template #item let-item>
           <ng-container *ngIf="item">
             <a [routerLink]="item.routerLink" class="p-breadcrumb-item-link">
+              <span class="breadcrumb-icon" [class]="item.icon"></span>
               <span
-                [ngClass]="[item.icon ? item.icon : '', 'text-color']"
-              ></span>
-              <span class="text-primary font-semibold">{{ item.label }}</span>
+                class="breadcrumb-label"
+                [class.hidden-mobile]="displayMode === 'mobile'"
+              >
+                {{ item.label }}
+              </span>
             </a>
           </ng-container>
         </ng-template>

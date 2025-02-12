@@ -47,3 +47,10 @@ export interface ItemDetailConfig {
   dataService: ItemDetailDataService<any>;
   updateSuccessMessage: string;
 }
+
+export type DisplayMode = 'desktop' | 'mobile';
+
+// Add this function to help determine display mode
+export function getDisplayMode(): DisplayMode {
+  return window.innerWidth < 768 ? 'mobile' : 'desktop';
+}
