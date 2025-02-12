@@ -1,6 +1,6 @@
-import { Component, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterModule, Router } from '@angular/router';
+import { RouterModule, Router, ActivatedRoute } from '@angular/router';
 import { MenubarModule } from 'primeng/menubar';
 import { MenuItem } from 'primeng/api';
 import { AvatarModule } from 'primeng/avatar';
@@ -10,6 +10,14 @@ import { AuthService } from './services/auth.service';
 import { TooltipModule } from 'primeng/tooltip';
 import { BreadcrumbModule } from 'primeng/breadcrumb';
 import { NavigationEnd } from '@angular/router';
+import { filter, map, Observable, of } from 'rxjs';
+import { BreadcrumbService } from './services/breadcrumb.service';
+
+export interface BreadcrumbItem {
+  label: string;
+  url: string;
+  icon?: string;
+}
 
 @Component({
   selector: 'app-root',
@@ -37,26 +45,35 @@ export class AppComponent implements OnInit {
   breadcrumbItems: MenuItem[] = [];
   home: MenuItem = { icon: 'pi pi-home', routerLink: '/' };
 
-  constructor(public authService: AuthService, private router: Router) {
+  constructor(
+    public authService: AuthService,
+    private router: Router,
+    private breadcrumbService: BreadcrumbService,
+    private cdr: ChangeDetectorRef
+  ) {
     this.authService.isAuthenticated$.subscribe((isAuthenticated) => {
       this.isAuthenticated = isAuthenticated;
       this.updateMenuItems();
       this.updateProfileItems();
     });
     this.version = (window as any).__APP_VERSION__ || '0.0.0';
-
-    // Subscribe to router events to update breadcrumbs
-    this.router.events.subscribe((event) => {
-      if (event instanceof NavigationEnd) {
-        this.updateBreadcrumbs();
-      }
-    });
   }
 
   ngOnInit() {
     this.updateMenuItems();
     this.updateProfileItems();
     this.avatarUrl = this.getAvatarUrl();
+
+    // Set home item
+    //this.breadcrumbService.setHome({ icon: 'pi pi-home', routerLink: '/' });
+
+    // Subscribe to breadcrumbs
+    this.breadcrumbService.breadcrumbsSubject
+      .asObservable()
+      .subscribe((items) => {
+        this.breadcrumbItems = items;
+        console.log('Breadcrumb items', this.breadcrumbItems);
+      });
   }
 
   private updateMenuItems() {
@@ -111,14 +128,5 @@ export class AppComponent implements OnInit {
   toggleTheme() {
     this.isDarkMode = !this.isDarkMode;
     document.body.classList.toggle('dark', this.isDarkMode);
-  }
-
-  private updateBreadcrumbs() {
-    const paths = this.router.url.split('/').filter((x) => x);
-    this.breadcrumbItems = paths.map((path, index) => {
-      const label = path.charAt(0).toUpperCase() + path.slice(1);
-      const routerLink = '/' + paths.slice(0, index + 1).join('/');
-      return { label, routerLink };
-    });
   }
 }

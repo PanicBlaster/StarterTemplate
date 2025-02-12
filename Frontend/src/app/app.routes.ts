@@ -47,9 +47,17 @@ export const routes: Routes = [
 
   {
     path: 'users',
+    data: { title: 'Users', icon: 'pi pi-users' },
     children: [
-      { path: '', component: UserListComponent },
-      { path: ':id', component: UserDetailComponent },
+      {
+        path: '',
+        component: UserListComponent,
+      },
+      {
+        path: ':id',
+        component: UserDetailComponent,
+        data: { title: 'User', icon: 'pi pi-user', canReplace: true },
+      },
     ],
     canActivate: [authGuard],
   },

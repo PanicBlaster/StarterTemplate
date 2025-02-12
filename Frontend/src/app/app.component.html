@@ -32,10 +32,21 @@
   <div class="content">
     <div class="breadcrumb-container" *ngIf="isAuthenticated">
       <p-breadcrumb
-        [model]="breadcrumbItems"
         [home]="home"
+        [model]="breadcrumbItems"
         [styleClass]="'border-none surface-ground'"
-      ></p-breadcrumb>
+      >
+        <ng-template #item let-item>
+          <ng-container *ngIf="item">
+            <a [routerLink]="item.routerLink" class="p-breadcrumb-item-link">
+              <span
+                [ngClass]="[item.icon ? item.icon : '', 'text-color']"
+              ></span>
+              <span class="text-primary font-semibold">{{ item.label }}</span>
+            </a>
+          </ng-container>
+        </ng-template>
+      </p-breadcrumb>
     </div>
     <router-outlet></router-outlet>
   </div>

@@ -6,6 +6,7 @@ import { AccountService } from '../../../services/account.service';
 import { CommonModule } from '@angular/common';
 import { ToastModule } from 'primeng/toast';
 import { MessageService } from 'primeng/api';
+import { ActivatedRoute } from '@angular/router';
 @Component({
   selector: 'app-user-detail',
   standalone: true,
@@ -67,13 +68,16 @@ export class UserDetailComponent {
 
   constructor(
     private accountService: AccountService,
-    private authService: AuthService
+    private authService: AuthService,
+    private route: ActivatedRoute
   ) {
     console.log('User detail Constructor');
   }
 
   ngOnInit() {
     console.log('User detail ngOnInit');
+
+    this.route.snapshot.data['label'] = 'goodbye';
   }
 
   resetPassword() {

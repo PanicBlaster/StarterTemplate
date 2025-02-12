@@ -12,6 +12,7 @@ import { FluidModule } from 'primeng/fluid';
 import { MessageService } from 'primeng/api';
 import { ActivatedRoute, Router } from '@angular/router';
 import { QueryOptions } from '../../dto/query.dto';
+import { BreadcrumbService } from '../../services/breadcrumb.service';
 
 declare const location: any;
 
@@ -153,7 +154,8 @@ export class ItemDetailComponent implements OnInit {
   constructor(
     private messageService: MessageService,
     private route: ActivatedRoute,
-    private router: Router
+    private router: Router,
+    private breadcrumbService: BreadcrumbService
   ) {
     console.log('Item detail Constructor');
   }
@@ -190,6 +192,8 @@ export class ItemDetailComponent implements OnInit {
       if (this.query.id === 'new') {
         this.isEditing = true;
       }
+
+      this.breadcrumbService.updateLastBreadcrumbLabel(this.item.email);
     });
   }
 
