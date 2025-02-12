@@ -25,6 +25,15 @@ describe('TenantAccess', () => {
     save: jest.fn(),
     delete: jest.fn(),
     preload: jest.fn(),
+    createQueryBuilder: jest.fn(() => ({
+      innerJoin: jest.fn().mockReturnThis(),
+      where: jest.fn().mockReturnThis(),
+      andWhere: jest.fn().mockReturnThis(),
+      take: jest.fn().mockReturnThis(),
+      skip: jest.fn().mockReturnThis(),
+      orderBy: jest.fn().mockReturnThis(),
+      getManyAndCount: jest.fn().mockResolvedValue([[mockTenant], 1]),
+    })),
   };
 
   const mockHttpService = {

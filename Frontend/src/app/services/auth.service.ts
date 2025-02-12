@@ -163,7 +163,8 @@ export class AuthService {
   }
 
   handleUnauthorized() {
-    this.logout(); // This will also set isAuthenticated to false
+    console.log('handleUnauthorized');
+    //this.logout(); // This will also set isAuthenticated to false
   }
 
   redirectToMicrosoftLogin() {

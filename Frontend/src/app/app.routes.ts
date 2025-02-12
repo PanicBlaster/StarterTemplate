@@ -10,6 +10,7 @@ import { NotificationsComponent } from './pages/notifications/notifications.comp
 import { AuthMicrosoftComponent } from './pages/auth/auth-microsoft/auth-microsoft.component';
 import { TestItemComponent } from './pages/test-item/test-item.component';
 import { UserDetailComponent } from './pages/users/user-detail/user-detail.component';
+import { UsersTenantListComponent } from './pages/users/users-tenant-list/users-tenant-list.component';
 
 export const routes: Routes = [
   { path: 'auth', component: AuthComponent },
@@ -57,6 +58,11 @@ export const routes: Routes = [
         path: ':id',
         component: UserDetailComponent,
         data: { title: 'User', icon: 'pi pi-user', canReplace: true },
+      },
+      {
+        path: ':id/tenants',
+        component: UsersTenantListComponent,
+        data: { title: 'User Tenants', icon: 'pi pi-building' },
       },
     ],
     canActivate: [authGuard],

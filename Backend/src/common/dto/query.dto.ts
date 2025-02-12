@@ -33,6 +33,10 @@ export class QueryOptionsDto {
   @ApiPropertyOptional({ description: 'Filter by tenant ID' })
   @IsOptional()
   tenantId?: string;
+
+  @ApiPropertyOptional({ description: 'Filter by user ID' })
+  @IsOptional()
+  userId?: string;
 }
 
 export interface QueryResultItem<T> {

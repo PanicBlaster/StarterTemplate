@@ -47,13 +47,19 @@ export class TenantAccess {
     };
   }
 
-  async queryTenants(options: QueryOptionsDto): Promise<QueryResult<Tenant>> {
-    const [items, total] = await this.tenantRepository.findAndCount({
-      take: options.take || 10,
-      skip: options.skip || 0,
-      where: options.where || {},
-      order: options.order || { createdAt: 'DESC' },
-    });
+  async queryTenants(
+    options: QueryOptionsDto & { userId?: string }
+  ): Promise<QueryResult<Tenant>> {
+    let query = this.tenantRepository.createQueryBuilder('tenant');
+
+    const [items, total] = await query
+      .take(options.take || 10)
+      .skip(options.skip || 0)
+      .orderBy(
+        options.order?.field || 'tenant.createdAt',
+        options.order?.direction || 'DESC'
+      )
+      .getManyAndCount();
 
     return {
       items: items.map((item) => ({

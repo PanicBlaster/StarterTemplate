@@ -15,6 +15,7 @@ import {
 } from '@nestjs/common';
 import {
   ApiBearerAuth,
+  ApiHeader,
   ApiOperation,
   ApiResponse,
   ApiTags,
@@ -27,13 +28,17 @@ import {
 import { JwtAuthGuard } from 'src/auth/jwt.guard';
 import { TenantAccess } from 'src/access/services/tenant-access.service';
 import { QueryOptionsDto } from 'src/common/dto/query.dto';
+import { UserAccess } from 'src/access/services/user-access.service';
 
 @ApiTags('tenant')
 @Controller('api/v1/tenant')
 @UseGuards(JwtAuthGuard)
-@ApiBearerAuth()
+@ApiBearerAuth('JWT-auth')
 export class TenantController {
-  constructor(private readonly tenantAccess: TenantAccess) {}
+  constructor(
+    private readonly tenantAccess: TenantAccess,
+    private readonly userAccess: UserAccess
+  ) {}
 
   @Get()
   @ApiOperation({ summary: 'Get all tenants' })
@@ -41,10 +46,39 @@ export class TenantController {
     status: 200,
     description: 'Return all tenants with pagination',
   })
+  @ApiHeader({
+    name: 'X-Tenant-ID',
+    required: false,
+    description: 'Optional tenant ID',
+  })
   async queryTenants(
-    @Query(ValidationPipe) query: QueryOptionsDto,
+    @Query('user') userIdentifier?: string,
     @Headers('X-Tenant-ID') tenantId?: string
   ) {
+    let userId = undefined;
+
+    const query: QueryOptionsDto = {
+      where: {},
+      order: {
+        createdAt: 'DESC',
+      },
+    };
+
+    if (userIdentifier) {
+      // Try to find user by id, email or username
+      const userQuery = {
+        where: [
+          { id: userIdentifier },
+          { email: userIdentifier },
+          { username: userIdentifier },
+        ],
+      };
+      const users = await this.userAccess.queryUsers(userQuery);
+      if (users.total > 0) {
+        userId = users.items[0].id;
+      }
+    }
+
     if (tenantId) {
       query.where = {
         ...(query.where || {}),
@@ -54,6 +88,7 @@ export class TenantController {
 
     return this.tenantAccess.queryTenants({
       ...query,
+      userId,
       where: {
         ...(query.where || {}),
         ...(tenantId && { id: tenantId }),

@@ -6,7 +6,7 @@ import { AccountService } from '../../../services/account.service';
 import { CommonModule } from '@angular/common';
 import { ToastModule } from 'primeng/toast';
 import { MessageService } from 'primeng/api';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 @Component({
   selector: 'app-user-detail',
   standalone: true,
@@ -51,6 +51,11 @@ export class UserDetailComponent {
         icon: 'pi pi-lock',
         onClick: () => this.resetPassword(),
       },
+      {
+        label: 'Tenants',
+        icon: 'pi pi-sitemap',
+        onClick: () => this.showTenants(),
+      },
     ],
     dataService: {
       parseParams: (params, queryParams) => ({
@@ -70,7 +75,8 @@ export class UserDetailComponent {
   constructor(
     private accountService: AccountService,
     private authService: AuthService,
-    private route: ActivatedRoute
+    private route: ActivatedRoute,
+    private router: Router
   ) {
     console.log('User detail Constructor');
   }
@@ -83,5 +89,14 @@ export class UserDetailComponent {
 
   resetPassword() {
     console.log('Reset password');
+  }
+
+  showTenants() {
+    console.log('Show tenants');
+    this.router.navigate([
+      '/users',
+      this.route.snapshot.params['id'],
+      'tenants',
+    ]);
   }
 }
