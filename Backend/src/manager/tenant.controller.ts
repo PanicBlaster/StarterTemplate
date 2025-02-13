@@ -20,11 +20,7 @@ import {
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
-import {
-  CreateTenantDto,
-  UpdateTenantDto,
-  TenantQueryDto,
-} from '../common/dto/tenant.dto';
+import { CreateTenantDto, UpdateTenantDto } from '../common/dto/tenant.dto';
 import { JwtAuthGuard } from 'src/auth/jwt.guard';
 import { TenantAccess } from 'src/access/services/tenant-access.service';
 import { QueryOptionsDto } from 'src/common/dto/query.dto';
@@ -114,7 +110,7 @@ export class TenantController {
     if (!tenant) {
       throw new NotFoundException('Tenant not found');
     }
-    return tenant;
+    return tenant.item;
   }
 
   @Post()
@@ -130,7 +126,12 @@ export class TenantController {
       );
     }
 
-    return this.tenantAccess.upsertTenant(data);
+    const id = await this.tenantAccess.upsertTenant(data);
+    return {
+      id,
+      success: true,
+      message: 'Tenant created successfully',
+    };
   }
 
   @Put(':id')

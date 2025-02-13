@@ -279,7 +279,7 @@ export class ItemDetailComponent implements OnInit {
         if (field === 'password') {
           return this.getRandomPassword();
         }
-        return 'Test ' + field;
+        return 'Test ' + field + ' ' + Math.floor(Math.random() * 1000000);
       case 'number':
         return this.getRandomNumber();
       case 'date':

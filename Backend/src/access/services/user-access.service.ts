@@ -9,15 +9,7 @@ import { User } from '../entities/user.entity';
 import { v4 as uuidv4 } from 'uuid';
 import * as bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
-import { JwtPayload, AuthResponse } from '../../common/dto/auth.dto';
-import {
-  IsString,
-  IsNotEmpty,
-  IsEmail,
-  IsOptional,
-  IsUUID,
-} from 'class-validator';
-import { TenantAccess } from './tenant-access.service';
+import { AuthResponse } from '../../common/dto/auth.dto';
 import {
   QueryOptionsDto,
   QueryResult,
@@ -25,6 +17,7 @@ import {
 } from '../../common/dto/query.dto';
 
 import { UserCreateDto, UserDto } from '../../common/dto/user.dto';
+import { Tenant } from '../entities/tenant.entity';
 
 @Injectable()
 export class UserAccess {
@@ -32,7 +25,8 @@ export class UserAccess {
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
     private readonly jwtService: JwtService,
-    private readonly tenantAccess: TenantAccess
+    @InjectRepository(Tenant)
+    private readonly tenantRepository: Repository<Tenant>
   ) {}
 
   private mapToDto(user: User): UserDto {
@@ -211,7 +205,9 @@ export class UserAccess {
       throw new NotFoundException('User not found');
     }
 
-    const tenant = await this.tenantAccess.findOneTenant({ id: tenantId });
+    const tenant = await this.tenantRepository.findOne({
+      where: { id: tenantId },
+    });
     if (!tenant) {
       throw new NotFoundException('Tenant not found');
     }
@@ -222,7 +218,7 @@ export class UserAccess {
 
     // Check if user is already in tenant
     if (!user.tenants.some((t) => t.id === tenantId)) {
-      user.tenants.push(tenant.item);
+      user.tenants.push();
       await this.userRepository.save(user);
     }
   }

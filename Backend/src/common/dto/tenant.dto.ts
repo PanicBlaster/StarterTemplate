@@ -51,18 +51,6 @@ export class UpdateTenantDto {
   isActive?: boolean;
 }
 
-export class TenantQueryDto {
-  @ApiPropertyOptional({ description: 'Filter by active status' })
-  @IsBoolean()
-  @IsOptional()
-  isActive?: boolean;
-
-  @ApiPropertyOptional({ description: 'Search by name' })
-  @IsString()
-  @IsOptional()
-  search?: string;
-}
-
 export class TenantDto implements CreateTenantDto {
   @ApiProperty({ description: 'The name of the tenant', example: 'Acme Corp' })
   @IsString()

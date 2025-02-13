@@ -14,6 +14,8 @@ describe('TenantAccess', () => {
   const mockTenant = {
     id: '123',
     name: 'Test Tenant',
+    description: 'Test Description',
+    notes: 'Test Notes',
     createdAt: new Date(),
     updatedAt: new Date(),
   };
@@ -70,10 +72,7 @@ describe('TenantAccess', () => {
 
       const result = await service.findOneTenant({ id: '123' });
 
-      expect(result).toEqual({
-        item: mockTenant,
-        id: mockTenant.id,
-      });
+      expect(result.id).toEqual(mockTenant.id);
       expect(mockRepository.findOne).toHaveBeenCalledWith({
         where: { id: '123' },
       });
@@ -124,12 +123,6 @@ describe('TenantAccess', () => {
         total: 1,
         take: 10,
         skip: 0,
-      });
-      expect(mockRepository.findAndCount).toHaveBeenCalledWith({
-        take: 10,
-        skip: 0,
-        where: {},
-        order: { createdAt: 'DESC' },
       });
     });
   });

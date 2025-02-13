@@ -7,13 +7,14 @@ import { User } from '../../entities/user.entity';
 import { UnauthorizedException, NotFoundException } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
 import { TenantAccess } from '../tenant-access.service';
-import { UserCreateDto, UserDto } from 'src/common/dto/user.dto';
+import { UserCreateDto, UserDto } from '../../../common/dto/user.dto';
+import { Tenant } from '../../entities/tenant.entity';
 
 describe('UserAccess', () => {
   let service: UserAccess;
   let userRepository: Repository<User>;
   let jwtService: JwtService;
-  let tenantAccess: TenantAccess;
+  let tenantRepository: Repository<Tenant>;
 
   const mockUser = {
     id: '1',
@@ -47,6 +48,10 @@ describe('UserAccess', () => {
     findOneTenant: jest.fn(),
   };
 
+  const mockTenantRepository = {
+    findOne: jest.fn(),
+  };
+
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
@@ -60,8 +65,8 @@ describe('UserAccess', () => {
           useValue: mockJwtService,
         },
         {
-          provide: TenantAccess,
-          useValue: mockTenantAccess,
+          provide: getRepositoryToken(Tenant),
+          useValue: mockTenantRepository,
         },
       ],
     }).compile();
@@ -69,7 +74,9 @@ describe('UserAccess', () => {
     service = module.get<UserAccess>(UserAccess);
     userRepository = module.get<Repository<User>>(getRepositoryToken(User));
     jwtService = module.get<JwtService>(JwtService);
-    tenantAccess = module.get<TenantAccess>(TenantAccess);
+    tenantRepository = module.get<Repository<Tenant>>(
+      getRepositoryToken(Tenant)
+    );
   });
 
   afterEach(() => {

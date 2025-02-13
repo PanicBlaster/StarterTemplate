@@ -8,7 +8,11 @@ import {
   QueryResult,
   QueryResultItem,
 } from '../../common/dto/query.dto';
-import { CreateTenantDto, UpdateTenantDto } from '../../common/dto/tenant.dto';
+import {
+  CreateTenantDto,
+  TenantDto,
+  UpdateTenantDto,
+} from '../../common/dto/tenant.dto';
 import { Tenant } from '../entities/tenant.entity';
 
 @Injectable()
@@ -21,15 +25,21 @@ export class TenantAccess {
 
   async findOneTenant(
     options: QueryOptionsDto
-  ): Promise<QueryResultItem<Tenant> | null> {
+  ): Promise<QueryResultItem<TenantDto>> {
     const tenant = await this.tenantRepository.findOne({
       where: { id: options.id },
     });
 
     if (!tenant) return null;
 
+    const dto = {
+      name: tenant.name,
+      description: tenant.description,
+      notes: tenant.notes,
+    } as TenantDto;
+
     return {
-      item: tenant,
+      item: dto,
       id: tenant.id,
     };
   }

@@ -11,6 +11,10 @@ import { AuthMicrosoftComponent } from './pages/auth/auth-microsoft/auth-microso
 import { TestItemComponent } from './pages/test-item/test-item.component';
 import { UserDetailComponent } from './pages/users/user-detail/user-detail.component';
 import { UsersTenantListComponent } from './pages/users/users-tenant-list/users-tenant-list.component';
+import { AdminComponent } from './pages/admin/admin.component';
+import { AdminTenantListComponent } from './pages/admin/admin-tenant-list/admin-tenant-list.component';
+import { AdminUserListComponent } from './pages/admin/admin-user-list/admin-user-list.component';
+import { AdminTenantDetailComponent } from './pages/admin/admin-tenant-detail/admin-tenant-detail.component';
 
 export const routes: Routes = [
   { path: 'auth', component: AuthComponent },
@@ -77,6 +81,67 @@ export const routes: Routes = [
           label: 'Tenants',
           routerLink: ['/users', ':id', 'tenants'],
           icon: 'pi pi-sitemap',
+        },
+      ],
+    },
+    canActivate: [authGuard],
+  },
+  {
+    path: 'admin',
+    component: AdminComponent,
+    data: {
+      breadcrumb: [
+        { label: 'Admin', routerLink: ['/admin'], icon: 'pi pi-cog' },
+      ],
+    },
+    canActivate: [authGuard],
+  },
+  {
+    path: 'admin/tenants',
+    component: AdminTenantListComponent,
+    data: {
+      breadcrumb: [
+        { label: 'Admin', routerLink: ['/admin'], icon: 'pi pi-cog' },
+        {
+          label: 'Tenants',
+          routerLink: ['/admin/tenants'],
+          icon: 'pi pi-building',
+        },
+      ],
+    },
+    canActivate: [authGuard],
+  },
+  {
+    path: 'admin/users',
+    component: AdminUserListComponent,
+    data: {
+      breadcrumb: [
+        { label: 'Admin', routerLink: ['/admin'], icon: 'pi pi-cog' },
+        {
+          label: 'Users',
+          routerLink: ['/admin/users'],
+          icon: 'pi pi-users',
+        },
+      ],
+    },
+    canActivate: [authGuard],
+  },
+  {
+    path: 'admin/tenants/:id',
+    component: AdminTenantDetailComponent,
+    data: {
+      breadcrumb: [
+        { label: 'Admin', routerLink: ['/admin'], icon: 'pi pi-cog' },
+        {
+          label: 'Tenants',
+          routerLink: ['/admin/tenants'],
+          icon: 'pi pi-building',
+        },
+        {
+          label: 'Tenant',
+          routerLink: ['/admin/tenants', ':id'],
+          icon: 'pi pi-building',
+          canReplace: true,
         },
       ],
     },
