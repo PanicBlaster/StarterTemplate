@@ -31,6 +31,7 @@ declare const location: any;
     FluidModule,
     ToastModule,
   ],
+  providers: [MessageService],
   template: `
     <app-page-toolbar
       [header]="config.header"
@@ -128,6 +129,7 @@ declare const location: any;
         </div>
       </div>
     </p-fluid>
+    <p-toast></p-toast>
   `,
   styles: [
     `
