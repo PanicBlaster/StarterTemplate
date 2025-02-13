@@ -10,6 +10,7 @@ import { ItemDetailConfig, FormField } from './item-detail.types';
 import { ToolbarAction } from '../page-toolbar/page-toolbar.types';
 import { FluidModule } from 'primeng/fluid';
 import { MessageService } from 'primeng/api';
+import { ToastModule } from 'primeng/toast';
 import { ActivatedRoute, Router } from '@angular/router';
 import { QueryOptions } from '../../dto/query.dto';
 import { BreadcrumbService } from '../../services/breadcrumb.service';
@@ -28,6 +29,7 @@ declare const location: any;
     DropdownModule,
     PageToolbarComponent,
     FluidModule,
+    ToastModule,
   ],
   template: `
     <app-page-toolbar
@@ -193,7 +195,7 @@ export class ItemDetailComponent implements OnInit {
         this.isEditing = true;
       }
 
-      if (this.config.breadcrumbField) {
+      if (this.config.breadcrumbField && this.query.id !== 'new') {
         this.breadcrumbService.updateLastBreadcrumbLabel(
           this.item[this.config.breadcrumbField]
         );

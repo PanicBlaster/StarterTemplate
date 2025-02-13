@@ -91,18 +91,19 @@ export class TenantAccess {
       if (!existingTenant) {
         throw new NotFoundException('Tenant not found');
       }
+      existingTenant.item.name = data.name;
+      existingTenant.item.description = data.description;
+      existingTenant.item.notes = data.notes;
+      await this.tenantRepository.save(existingTenant.item);
+      return existingTenant.id;
+    } else {
+      const tenant = this.tenantRepository.create({
+        ...data,
+        id: uuidv4(),
+      });
+      await this.tenantRepository.save(tenant);
+      return tenant.id;
     }
-
-    const tenant = id
-      ? await this.tenantRepository.preload({ id, ...data })
-      : this.tenantRepository.create({
-          id: uuidv4(),
-          ...data,
-        });
-
-    const savedTenant = await this.tenantRepository.save(tenant);
-
-    return savedTenant.id;
   }
 
   async removeTenant(options: QueryOptionsDto): Promise<void> {
