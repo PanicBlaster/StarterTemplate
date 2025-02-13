@@ -19,52 +19,67 @@ export const routes: Routes = [
     component: HomeComponent,
     canActivate: [authGuard],
   },
-
   {
     path: 'profile',
     component: ProfileComponent,
     title: 'Profile',
   },
-
   {
     path: 'notifications',
     component: NotificationsComponent,
     canActivate: [authGuard],
     title: 'Notifications',
   },
-
   { path: '', redirectTo: '/home', pathMatch: 'full' },
-
   {
     path: 'authmicrosoft',
     component: AuthMicrosoftComponent,
   },
-
   {
     path: 'testitem',
     component: TestItemComponent,
     canActivate: [authGuard],
   },
-
   {
     path: 'users',
-    data: { title: 'Users', icon: 'pi pi-users' },
-    children: [
-      {
-        path: '',
-        component: UserListComponent,
-      },
-      {
-        path: ':id',
-        component: UserDetailComponent,
-        data: { title: 'User', icon: 'pi pi-user', canReplace: true },
-      },
-      {
-        path: ':id/tenants',
-        component: UsersTenantListComponent,
-        data: { title: 'User Tenants', icon: 'pi pi-building' },
-      },
-    ],
+    component: UserListComponent,
+    data: {
+      title: 'Users',
+      icon: 'pi pi-users',
+      breadcrumb: [
+        { label: 'Users', routerLink: ['/users'], icon: 'pi pi-users' },
+      ],
+    },
+    canActivate: [authGuard],
+  },
+  {
+    path: 'users/:id',
+    component: UserDetailComponent,
+    data: {
+      title: 'User',
+      icon: 'pi pi-user',
+      canReplace: true,
+      breadcrumb: [
+        { label: 'Users', routerLink: ['/users'], icon: 'pi pi-users' },
+        { label: 'User', routerLink: ['/users', ':id'], icon: 'pi pi-user' },
+      ],
+    },
+    canActivate: [authGuard],
+  },
+  {
+    path: 'users/:id/tenants',
+    component: UsersTenantListComponent,
+    data: {
+      breadcrumb: [
+        { label: 'Users', routerLink: ['/users'], icon: 'pi pi-users' },
+        { label: 'User', routerLink: ['/users', ':id'], icon: 'pi pi-user' },
+        {
+          label: 'Tenants',
+          routerLink: ['/users', ':id', 'tenants'],
+          icon: 'pi pi-sitemap',
+        },
+      ],
+    },
     canActivate: [authGuard],
   },
 ];
