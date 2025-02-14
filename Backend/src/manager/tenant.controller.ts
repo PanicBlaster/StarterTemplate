@@ -126,7 +126,7 @@ export class TenantController {
       );
     }
 
-    const id = await this.tenantAccess.upsertTenant(data);
+    const id = this.tenantAccess.upsertTenant(data);
     return {
       id,
       success: true,
@@ -154,7 +154,12 @@ export class TenantController {
       throw new NotFoundException('Tenant not found');
     }
 
-    return this.tenantAccess.upsertTenant(data, id);
+    this.tenantAccess.upsertTenant(data, id);
+    return {
+      id,
+      success: true,
+      message: 'Tenant updated successfully',
+    };
   }
 
   @Delete(':id')

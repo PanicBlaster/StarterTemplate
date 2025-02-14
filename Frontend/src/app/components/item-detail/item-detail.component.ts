@@ -231,6 +231,9 @@ export class ItemDetailComponent implements OnInit {
               detail: this.config.updateSuccessMessage,
             });
             this.onUpdate.emit(this.editingItem);
+
+            this.editingItem.id = result.id;
+            this.query.id = result.id;
           },
           error: (error) => {
             console.error('Error saving changes:', error);

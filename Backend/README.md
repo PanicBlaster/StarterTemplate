@@ -305,7 +305,12 @@ Create example:
         );
       }
   }
-  return this.clientAccess.upsertClient(data);
+  const id = await this.clientAccess.upsertClient(data);
+  return {
+    id,
+    message: 'Client created successfully',
+    status: 'success',
+  };
 }
 ```
 
@@ -343,7 +348,12 @@ Update example:
       throw new NotFoundException('Client not found');
     }
 
-    return this.clientAccess.upsertClient(data, id);
+    const id = await this.clientAccess.upsertClient(data, id);
+    return {
+      id,
+      message: 'Client updated successfully',
+      status: 'success',
+    };
   }
 ```
 
@@ -353,7 +363,7 @@ Typical data access will should use similar methods, with similar naming. All da
 
 ## Upsert Example
 
-Upsert should not return anything.
+Upsert should return the id of the created or updated item.
 
 ```typescript
 async upsertClient(data: clientDto, id?: string): Promise<string> {

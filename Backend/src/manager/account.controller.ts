@@ -142,35 +142,6 @@ export class AccountController {
     };
   }
 
-  @Post('tenant/add-user')
-  @ApiOperation({ summary: 'Add a user to a tenant' })
-  @ApiResponse({
-    status: 200,
-    description: 'User added to tenant successfully',
-  })
-  @ApiResponse({ status: 404, description: 'User or tenant not found' })
-  @ApiHeader({
-    name: 'X-Tenant-ID',
-    required: false,
-    description: 'Optional tenant ID',
-  })
-  async addUserToTenant(
-    @Body(ValidationPipe) data: AddUserToTenantDto,
-    @Headers('X-Tenant-ID') headerTenantId?: string
-  ): Promise<void> {
-    const tenantId = data.tenantId || headerTenantId;
-    if (!tenantId) {
-      throw new BadRequestException(
-        'Tenant ID must be provided in body or header'
-      );
-    }
-
-    const user = await this.userAccess.findOneUser({ id: data.userId });
-    if (!user) {
-      throw new NotFoundException(`User with ID ${data.userId} not found`);
-    }
-  }
-
   @Post('changepassword')
   @ApiOperation({ summary: 'Change user password' })
   @ApiResponse({ status: 200, description: 'Password changed successfully' })
