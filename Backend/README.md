@@ -80,13 +80,58 @@ netstat -ano | findstr :3001
 taskkill /PID <PID> /F
 ```
 
-## Deployment
+## VS Code
 
-### Production Deployment
+launch.json
 
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
+```
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Debug NestJS",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "start:debug"],
+      "console": "integratedTerminal",
+      "restart": true,
+      "autoAttachChildProcesses": true,
+      "sourceMaps": true,
+      "envFile": "${workspaceFolder}/.env"
+    }
+  ]
+}
+```
 
-### Cloud Deployment
+tasks.json
+
+```
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "type": "npm",
+      "script": "start:dev",
+      "problemMatcher": [],
+      "label": "npm: start:dev",
+      "detail": "Start NestJS in development mode",
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      }
+    },
+    {
+      "type": "npm",
+      "script": "build",
+      "group": "build",
+      "problemMatcher": [],
+      "label": "npm: build",
+      "detail": "Build NestJS application"
+    }
+  ]
+}
+```
 
 ## API Documentation
 
@@ -123,16 +168,16 @@ src/
 │   └── services/                     # Data access services
 │       ├── tenant-access.service.ts
 │       ├── user-access.service.ts
-├── manager/                          # API Controllers layer
+├── manager/                          # API Controllers
 │   ├── account.controller.ts
 │   ├── auth.controller.ts
 ├── common/                           # Shared code
-│   └── dto/                          # Data Transfer Objects
-│       └── pagination.dto.ts
-│       └── query.dto.ts
-│       └── auth.dto.ts
-│       └── tenant.dto.ts
-│       └── user.dto.ts
+│   └── dto/                          # Data Transfer
+│   └── pagination.dto.ts
+│   └── query.dto.ts
+│   └── auth.dto.ts
+│   └── tenant.dto.ts
+│   └── user.dto.ts
 └── config/                           # Configuration
     └── database.config.ts
 ```
@@ -275,7 +320,7 @@ FindOne example:
     if (client.tenantId !== tenantId) {
       throw new NotFoundException('Client not found');
     }
-    return client;
+    return client.item;
   }
 ```
 
@@ -366,23 +411,79 @@ Typical data access will should use similar methods, with similar naming. All da
 Upsert should return the id of the created or updated item.
 
 ```typescript
-async upsertClient(data: clientDto, id?: string): Promise<string> {
-  if (id) {
-    await this.findOneClient(id); // Verify exists
+  @Put(':id')
+  @ApiOperation({ summary: 'Update a client' })
+  async update(
+    @Headers('X-Tenant-ID') tenantId: string,
+    @Param('id') id: string,
+    @Body(ValidationPipe) data: UpdateClientDto
+  ) {
+    this.validateTenantId(tenantId, data.tenantId);
+
+    if (!data.tenantId) {
+      data.tenantId = tenantId;
+    }
+    if (tenantId) {
+      if (tenantId !== data.tenantId) {
+        throw new BadRequestException(
+          'Tenant ID in header must match tenant ID in body'
+        );
+      }
+    }
+
+    const client = await this.clientAccess.findOneClient(id);
+    if (client.tenantId !== tenantId) {
+      throw new NotFoundException('Client not found');
+    }
+
+    await this.clientAccess.upsertClient(data, id);
+    return {
+      id,
+      success: true,
+      message: 'Client updated successfully',
+    };
   }
+```
 
-  if (data.tenantId) {
-    await this.tenantAccess.findOneTenant(data.tenantId); // Verify tenant exists
+# Data Access
+
+Typical data access will should use similar methods, with similar naming. All data access should be in the access layer. The entity objects should NEVER be exposed, we should always return a DTO (common/dto) object.
+
+## Upsert Example
+
+Upsert should return the id of the created or updated item.
+
+```typescript
+  async upsertCatalog(data: CatalogDto, id?: string): Promise<string> {
+
+    const existingCatalog = await this.catalogRepository.findOne({
+      where: { id },
+    });
+    if (existingCatalog) {
+      // Update existing catalog
+      existingCatalog.name = data.name;
+      existingCatalog.description = data.description;
+      existingCatalog.notes = data.notes;
+      existingCatalog.isEnabled = data.isEnabled ?? existingCatalog.isEnabled;
+      existingCatalog.isDeleted = data.isDeleted ?? existingCatalog.isDeleted;
+      existingCatalog.contractorId = data.contractorId;
+
+      await this.catalogRepository.save(existingCatalog);
+      return existingCatalog.id;
+    } else {
+      // Create new item
+      if (!id) {
+        id = uuidv4();
+      }
+
+      const catalog = this.catalogRepository.create({
+        ...data,
+        id: id,
+      });
+      const savedCatalog = await this.catalogRepository.save(catalog);
+      return savedCatalog.id;
+    }
   }
-
-  const client = id
-    ? await this.clientRepository.preload({ id, ...data })
-    : this.clientRepository.create(data);
-
-  const savedClient = await this.clientRepository.save(client);
-
-  return savedClient.id;
-}
 ```
 
 ## Find One Example
@@ -503,13 +604,22 @@ When generating an new Access Service, use the following guidelines.
 3. Create the DTO in the common/dto folder.
 4. Update access.module.ts to include the entity and service.
 5. Update database.config.ts to include the entity.
-6. Create the tests for the service in the access/services/**tests** folder.
+6. Create the tests for the service in the access/services/ folder.
+7. Tests should live right next to the service file.
+
+When generating an entity, use the following guidelines.
+
+1. Create the entity in the access/entities folder.
+2. Update database.config.ts to include the entity.
+3. Create the DTO in the common/dto folder.
+4. Update access.module.ts to include the entity
 
 When generating an new Manager, use the following guidelines.
 
-1. Create the controller in the manager/controllers folder.
+1. Create the controller in the manager folder.
 2. Update manager.module.ts to include the new controller.
-3. Create the tests for the controller in the manager/controllers/**tests** folder.
+3. Create the tests for the controller in the manager folder.
+4. Tests should live right next to the controller file.
 
 Other notes:
 
@@ -545,10 +655,10 @@ The above would create the following files:
 ```
 - src/access/entities/task.entity.ts
 - src/access/services/task-access.service.ts
-- src/access/services/__tests__/task-access.service.spec.ts
+- src/access/services/task-access.service.spec.ts
 - src/common/dto/task.dto.ts
 - src/manager/controllers/work.controller.ts
-- src/manager/controllers/__tests__/work.controller.spec.ts
+- src/manager/controllers/work.controller.spec.ts
 - src/manager/manager.module.ts
 ```
 

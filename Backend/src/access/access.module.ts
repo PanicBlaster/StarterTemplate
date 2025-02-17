@@ -6,6 +6,7 @@ import { JwtAuthModule } from 'src/auth/jwt.module';
 import { TenantAccess } from './services/tenant-access.service';
 import { Tenant } from './entities/tenant.entity';
 import { HttpModule } from '@nestjs/axios';
+
 @Module({
   imports: [
     TypeOrmModule.forFeature([Tenant, User]),
