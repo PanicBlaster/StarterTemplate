@@ -6,6 +6,7 @@ import {
   UnauthorizedException,
   Logger,
   BadRequestException,
+  Get,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { UserAccess } from '../access/services/user-access.service';
@@ -179,5 +180,12 @@ export class AuthController {
       this.logger.error(`Microsoft signin failed: ${error.message}`);
       throw new UnauthorizedException('Microsoft authentication failed');
     }
+  }
+
+  @Get('test')
+  @ApiOperation({ summary: 'Test endpoint' })
+  @ApiResponse({ status: 200, description: 'Test successful' })
+  async test(): Promise<string> {
+    return 'Hello';
   }
 }

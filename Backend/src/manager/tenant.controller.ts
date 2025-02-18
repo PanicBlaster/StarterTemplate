@@ -21,10 +21,10 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 import { CreateTenantDto, UpdateTenantDto } from '../common/dto/tenant.dto';
-import { JwtAuthGuard } from 'src/auth/jwt.guard';
-import { TenantAccess } from 'src/access/services/tenant-access.service';
-import { QueryOptionsDto } from 'src/common/dto/query.dto';
-import { UserAccess } from 'src/access/services/user-access.service';
+import { JwtAuthGuard } from '../auth/jwt.guard';
+import { TenantAccess } from '../access/services/tenant-access.service';
+import { QueryOptionsDto } from '../common/dto/query.dto';
+import { UserAccess } from '../access/services/user-access.service';
 
 @ApiTags('tenant')
 @Controller('api/v1/tenant')

@@ -6,7 +6,6 @@ import { ManagerModule } from './manager/manager.module';
 import { Client } from 'pg';
 import { APP_INTERCEPTOR } from '@nestjs/core';
 import { VersionInterceptor } from './common/interceptors/version.interceptor';
-import { AccountController } from './manager/account.controller';
 
 const ENV = process.env.NODE_ENV;
 console.log('ENV', ENV);
