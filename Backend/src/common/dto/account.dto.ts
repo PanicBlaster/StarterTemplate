@@ -20,6 +20,11 @@ export class AddUserToTenantDto {
 }
 
 export class ChangePasswordDto {
+  @ApiProperty({ description: 'User ID' })
+  @IsUUID()
+  @IsNotEmpty()
+  userId: string;
+
   @ApiProperty({ description: 'Current password' })
   @IsString()
   @IsNotEmpty()

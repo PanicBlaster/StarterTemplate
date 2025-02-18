@@ -56,6 +56,13 @@ export class UserAccess {
 
     if (!user) return null;
 
+    if (options.tenantId) {
+      const tenant = user.tenants.find((t) => t.id === options.tenantId);
+      if (!tenant) {
+        return null;
+      }
+    }
+
     return {
       item: this.mapToDto(user),
       id: user.id,

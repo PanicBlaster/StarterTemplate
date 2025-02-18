@@ -551,3 +551,12 @@ POST /api/auth/signup
 -> UserAccess.verifyAuth
 -> Returns { accessToken, user }
 ```
+
+## Work Management Flow
+
+### Task Operations
+
+- `GET /api/v1/work/tasks` → WorkController.queryTasks → TaskAccessService.queryTasks
+- `GET /api/v1/work/tasks/:id` → WorkController.findOneTask → TaskAccessService.findOneTask
+- `POST /api/v1/work/tasks` → WorkController.createTask → TaskAccessService.upsertTask
+- `PUT /api/v1/work/tasks/:id` → WorkController.updateTask → TaskAccessService.upsertTask

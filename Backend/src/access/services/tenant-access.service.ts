@@ -4,6 +4,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { v4 as uuidv4 } from 'uuid';
 import {
+  ProcessResult,
   QueryOptionsDto,
   QueryResult,
   QueryResultItem,
@@ -60,16 +61,11 @@ export class TenantAccess {
   async queryTenants(
     options: QueryOptionsDto & { userId?: string }
   ): Promise<QueryResult<Tenant>> {
-    let query = this.tenantRepository.createQueryBuilder('tenant');
-
-    const [items, total] = await query
-      .take(options.take || 10)
-      .skip(options.skip || 0)
-      .orderBy(
-        options.order?.field || 'tenant.createdAt',
-        options.order?.direction || 'DESC'
-      )
-      .getManyAndCount();
+    const [items, total] = await this.tenantRepository.findAndCount({
+      take: options.take || 10,
+      skip: options.skip || 0,
+      order: options.order || { createdAt: 'DESC' },
+    });
 
     return {
       items: items.map((item) => ({

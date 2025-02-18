@@ -34,7 +34,11 @@ import {
 } from 'class-validator';
 import { UserAccess } from '../access/services/user-access.service';
 import { AuthResponse, AuthResponseDto } from '../common/dto/auth.dto';
-import { QueryOptionsDto, QueryResult } from '../common/dto/query.dto';
+import {
+  ProcessResult,
+  QueryOptionsDto,
+  QueryResult,
+} from '../common/dto/query.dto';
 import { firstValueFrom } from 'rxjs';
 import { JwtAuthGuard } from '../auth/jwt.guard';
 import {
@@ -64,7 +68,7 @@ export class AccountController {
     required: false,
     description: 'Optional tenant ID filter',
   })
-  async findAll(
+  async queryUsers(
     @Query(ValidationPipe) query: QueryOptionsDto,
     @Request() req,
     @Headers('X-Tenant-ID') headerTenantId?: string
@@ -99,7 +103,7 @@ export class AccountController {
   @ApiParam({ name: 'id', description: 'The account ID' })
   @ApiResponse({ status: 200, description: 'Account found' })
   @ApiResponse({ status: 404, description: 'Account not found' })
-  async findOne(
+  async findOneUser(
     @Param('id') id: string,
     @Headers('X-Tenant-ID') headerTenantId?: string
   ) {
@@ -116,7 +120,7 @@ export class AccountController {
   @Post()
   @ApiOperation({ summary: 'Create a new account' })
   @ApiResponse({ status: 201, description: 'Account created successfully' })
-  async create(@Body(ValidationPipe) createAccountDto: UserCreateDto) {
+  async createUser(@Body(ValidationPipe) createAccountDto: UserCreateDto) {
     const id = await this.userAccess.upsertUser(createAccountDto);
     return {
       id,
@@ -130,7 +134,7 @@ export class AccountController {
   @ApiParam({ name: 'id', description: 'The account ID to update' })
   @ApiResponse({ status: 200, description: 'Account updated successfully' })
   @ApiResponse({ status: 404, description: 'Account not found' })
-  async update(
+  async updateUser(
     @Param('id') id: string,
     @Body(ValidationPipe) updateAccountDto: UserDto
   ) {
@@ -138,7 +142,7 @@ export class AccountController {
     return {
       id,
       success: true,
-      message: 'Account updated successfully',
+      message: 'User updated successfully',
     };
   }
 
@@ -150,12 +154,23 @@ export class AccountController {
   async changePassword(
     @Body(ValidationPipe) changePasswordDto: ChangePasswordDto,
     @Request() req
-  ): Promise<void> {
+  ): Promise<ProcessResult> {
     const userId = req.user.userId; // From JWT token
+
+    if (userId !== changePasswordDto.userId) {
+      throw new UnauthorizedException('User ID does not match');
+    }
+
     await this.userAccess.changePassword(
       userId,
       changePasswordDto.currentPassword,
       changePasswordDto.newPassword
     );
+
+    return {
+      message: 'Password changed successfully',
+      success: true,
+      id: userId,
+    };
   }
 }
