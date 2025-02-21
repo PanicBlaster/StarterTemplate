@@ -25,7 +25,7 @@ import { QueryOptions } from '../../dto/query.dto';
   providers: [MessageService, ConfirmationService],
   template: `
     <app-page-toolbar
-      [header]="config.header"
+      [header]="header"
       [supportsAdd]="config.supportsAdd || false"
       [supportsEdit]="false"
       [canMockData]="false"
@@ -116,6 +116,8 @@ import { QueryOptions } from '../../dto/query.dto';
 export class ItemListComponent implements OnInit {
   @Input() config!: ItemListConfig;
 
+  header: string = '';
+
   items: any[] = [];
   flatItems: any[] = [];
   loading: boolean = false;
@@ -133,6 +135,7 @@ export class ItemListComponent implements OnInit {
   ngOnInit() {}
 
   loadData(event: any) {
+    this.header = this.config.header;
     this.loading = true;
     const params = this.config.dataService.parseParams(
       this.route.snapshot.params,
@@ -157,6 +160,14 @@ export class ItemListComponent implements OnInit {
 
         this.totalRecords = result.total;
         this.loading = false;
+
+        if (this.config.dataService.updateHeader) {
+          this.config.dataService
+            .updateHeader(params, this.items)
+            .then((header) => {
+              this.header = header;
+            });
+        }
       },
       error: (error) => {
         console.error('Error loading items:', error);

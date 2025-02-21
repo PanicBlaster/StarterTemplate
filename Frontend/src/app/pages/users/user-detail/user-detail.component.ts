@@ -7,6 +7,7 @@ import { CommonModule } from '@angular/common';
 import { ToastModule } from 'primeng/toast';
 import { MessageService } from 'primeng/api';
 import { ActivatedRoute, Router } from '@angular/router';
+import { ThemeUtils } from '@primeng/themes';
 @Component({
   selector: 'app-user-detail',
   standalone: true,
@@ -93,10 +94,6 @@ export class UserDetailComponent {
 
   showTenants() {
     console.log('Show tenants');
-    this.router.navigate([
-      '/users',
-      this.route.snapshot.params['id'],
-      'tenants',
-    ]);
+    this.router.navigate(['tenants'], { relativeTo: this.route });
   }
 }

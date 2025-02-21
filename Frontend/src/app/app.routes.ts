@@ -147,4 +147,50 @@ export const routes: Routes = [
     },
     canActivate: [authGuard],
   },
+  {
+    path: 'admin/users/:id',
+    component: UserDetailComponent,
+    data: {
+      breadcrumb: [
+        { label: 'Admin', routerLink: ['/admin'], icon: 'pi pi-cog' },
+        {
+          label: 'Users',
+          routerLink: ['/admin/users'],
+          icon: 'pi pi-users',
+        },
+        {
+          label: 'User',
+          routerLink: ['/admin/users', ':id'],
+          icon: 'pi pi-user',
+          canReplace: true,
+        },
+      ],
+    },
+    canActivate: [authGuard],
+  },
+  {
+    path: 'admin/users/:id/tenants',
+    component: UsersTenantListComponent,
+    data: {
+      breadcrumb: [
+        { label: 'Admin', routerLink: ['/admin'], icon: 'pi pi-cog' },
+        {
+          label: 'Users',
+          routerLink: ['/admin/users'],
+          icon: 'pi pi-users',
+        },
+        {
+          label: 'User',
+          routerLink: ['/admin/users', ':id'],
+          icon: 'pi pi-user',
+        },
+        {
+          label: 'Tenants',
+          routerLink: ['/admin/users', ':id', 'tenants'],
+          icon: 'pi pi-sitemap',
+        },
+      ],
+    },
+    canActivate: [authGuard],
+  },
 ];

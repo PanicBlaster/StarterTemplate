@@ -61,11 +61,28 @@ export class TenantAccess {
   async queryTenants(
     options: QueryOptionsDto & { userId?: string }
   ): Promise<QueryResult<Tenant>> {
-    const [items, total] = await this.tenantRepository.findAndCount({
-      take: options.take || 10,
-      skip: options.skip || 0,
-      order: options.order || { createdAt: 'DESC' },
-    });
+    let items = [];
+    let total = 0;
+
+    const userId = options.userId;
+    if (userId) {
+      // Fix the query by ordering by the aliased column name
+      [items, total] = await this.tenantRepository
+        .createQueryBuilder('tenant')
+        .innerJoinAndSelect('tenant.users', 'user', 'user.id = :userId', {
+          userId,
+        })
+        .take(options.take || 10)
+        .skip(options.skip || 0)
+        .orderBy('tenant.createdAt', 'DESC') // Use the properly aliased column
+        .getManyAndCount();
+    } else {
+      [items, total] = await this.tenantRepository.findAndCount({
+        take: options.take || 10,
+        skip: options.skip || 0,
+        order: options.order || { createdAt: 'DESC' },
+      });
+    }
 
     return {
       items: items.map((item) => ({

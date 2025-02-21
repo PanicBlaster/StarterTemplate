@@ -33,12 +33,7 @@ export class User {
   @Column({ nullable: true })
   role?: string;
 
-  @ManyToMany(() => Tenant)
-  @JoinTable({
-    name: 'user_tenants',
-    joinColumn: { name: 'user_id', referencedColumnName: 'id' },
-    inverseJoinColumn: { name: 'tenant_id', referencedColumnName: 'id' },
-  })
+  @ManyToMany(() => Tenant, (tenant) => tenant.users)
   tenants: Tenant[];
 
   @CreateDateColumn()

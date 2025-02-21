@@ -18,6 +18,7 @@ export interface ItemListDataService<T> {
   parseParams: (params: Params, queryParams: Params) => QueryOptions;
   loadItems(params: QueryOptions): Observable<QueryResult<T>>;
   deleteItem(params: QueryOptions, item: any): Observable<any>;
+  updateHeader?(params: QueryOptions, items: any[]): Promise<string>;
 }
 
 export interface ItemListConfig {

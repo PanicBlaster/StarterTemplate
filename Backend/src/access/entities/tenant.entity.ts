@@ -6,6 +6,7 @@ import {
   ManyToMany,
   CreateDateColumn,
   UpdateDateColumn,
+  JoinTable,
 } from 'typeorm';
 
 import { ApiProperty } from '@nestjs/swagger';
@@ -38,5 +39,6 @@ export class Tenant {
   updatedAt: Date;
 
   @ManyToMany(() => User, (user) => user.tenants)
+  @JoinTable()
   users: User[];
 }
