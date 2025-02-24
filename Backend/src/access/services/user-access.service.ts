@@ -251,4 +251,10 @@ export class UserAccess {
     user.passwordHash = await bcrypt.hash(newPassword, 10);
     await this.userRepository.save(user);
   }
+
+  async updatePassword(userId: string, password: string): Promise<void> {
+    const passwordHash = await bcrypt.hash(password, 10);
+
+    await this.userRepository.update(userId, { passwordHash });
+  }
 }

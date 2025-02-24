@@ -33,9 +33,6 @@ export class User {
   @Column({ nullable: true })
   role?: string;
 
-  @ManyToMany(() => Tenant, (tenant) => tenant.users)
-  tenants: Tenant[];
-
   @CreateDateColumn()
   createdAt: Date;
 
@@ -45,4 +42,7 @@ export class User {
   @ApiProperty({ description: 'Authentication source' })
   @Column({ default: 'LOCAL' })
   source: string;
+
+  @ManyToMany(() => Tenant, (tenant) => tenant.users)
+  tenants: Tenant[];
 }

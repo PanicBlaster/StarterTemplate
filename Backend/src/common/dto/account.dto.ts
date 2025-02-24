@@ -35,3 +35,15 @@ export class ChangePasswordDto {
   @IsNotEmpty()
   newPassword: string;
 }
+
+export class ResetPasswordDto {
+  @ApiProperty({ description: 'User ID' })
+  @IsUUID()
+  @IsNotEmpty()
+  userId: string;
+
+  @ApiProperty({ description: 'New password' })
+  @IsString()
+  @IsNotEmpty()
+  password: string;
+}

@@ -15,12 +15,15 @@ import {
   UpdateTenantDto,
 } from '../../common/dto/tenant.dto';
 import { Tenant } from '../entities/tenant.entity';
+import { User } from '../entities/user.entity';
 
 @Injectable()
 export class TenantAccess {
   constructor(
     @InjectRepository(Tenant)
     private readonly tenantRepository: Repository<Tenant>,
+    @InjectRepository(User)
+    private readonly userRepository: Repository<User>,
     private readonly httpService: HttpService
   ) {}
 
@@ -66,16 +69,22 @@ export class TenantAccess {
 
     const userId = options.userId;
     if (userId) {
-      // Fix the query by ordering by the aliased column name
-      [items, total] = await this.tenantRepository
-        .createQueryBuilder('tenant')
-        .innerJoinAndSelect('tenant.users', 'user', 'user.id = :userId', {
-          userId,
-        })
-        .take(options.take || 10)
-        .skip(options.skip || 0)
-        .orderBy('tenant.createdAt', 'DESC') // Use the properly aliased column
-        .getManyAndCount();
+      const user = await this.userRepository.findOne({
+        where: { id: userId },
+        relations: ['tenants'],
+      });
+
+      if (!user) {
+        return {
+          items: [],
+          total: 0,
+          take: options.take || 10,
+          skip: options.skip || 0,
+        };
+      }
+
+      items = user.tenants;
+      total = items.length;
     } else {
       [items, total] = await this.tenantRepository.findAndCount({
         take: options.take || 10,

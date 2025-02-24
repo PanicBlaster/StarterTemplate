@@ -44,6 +44,7 @@ import { JwtAuthGuard } from '../auth/jwt.guard';
 import {
   AddUserToTenantDto,
   ChangePasswordDto,
+  ResetPasswordDto,
 } from '../common/dto/account.dto';
 import { TenantAccess } from '../access/services/tenant-access.service';
 import { UserCreateDto, UserDto } from '../common/dto/user.dto';
@@ -170,6 +171,27 @@ export class AccountController {
     return {
       message: 'Password changed successfully',
       success: true,
+      id: userId,
+    };
+  }
+
+  @Post('reset-password')
+  @ApiOperation({ summary: 'Reset user password' })
+  async resetPassword(
+    @Body(ValidationPipe) resetPasswordDto: ResetPasswordDto
+  ): Promise<ProcessResult> {
+    const { userId, password } = resetPasswordDto;
+
+    const user = await this.userAccess.findOneUser({ id: userId });
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    await this.userAccess.updatePassword(userId, password);
+
+    return {
+      success: true,
+      message: 'Password reset successfully',
       id: userId,
     };
   }

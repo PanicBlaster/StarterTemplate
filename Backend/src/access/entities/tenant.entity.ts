@@ -2,7 +2,6 @@ import {
   Entity,
   Column,
   PrimaryColumn,
-  OneToMany,
   ManyToMany,
   CreateDateColumn,
   UpdateDateColumn,
@@ -38,7 +37,18 @@ export class Tenant {
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   updatedAt: Date;
 
+  @ApiProperty({ description: 'Users associated with this tenant' })
   @ManyToMany(() => User, (user) => user.tenants)
-  @JoinTable()
+  @JoinTable({
+    name: 'users_tenants',
+    joinColumn: {
+      name: 'tenant_id',
+      referencedColumnName: 'id',
+    },
+    inverseJoinColumn: {
+      name: 'user_id',
+      referencedColumnName: 'id',
+    },
+  })
   users: User[];
 }
