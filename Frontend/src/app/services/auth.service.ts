@@ -3,6 +3,7 @@ import { BehaviorSubject, Observable, tap } from 'rxjs';
 import { environment } from '../../environments/environment';
 import { HttpClient } from '@angular/common/http';
 import { AuthResponse, Profile, TenantInfo } from '../dto/auth.dto';
+import { Router } from '@angular/router';
 
 @Injectable({
   providedIn: 'root',
@@ -31,7 +32,7 @@ export class AuthService {
   private msRedirectUri = `${window.location.origin}/authmicrosoft`;
   private msAuthEndpoint = `https://login.microsoftonline.com/${environment.microsoftTenantId}/oauth2/v2.0/authorize`;
 
-  constructor(private http: HttpClient) {
+  constructor(private http: HttpClient, private router: Router) {
     // Initialize authentication state
     this.isAuthenticatedSubject.next(this.hasValidToken());
   }
@@ -164,7 +165,8 @@ export class AuthService {
 
   handleUnauthorized() {
     console.log('handleUnauthorized');
-    //this.logout(); // This will also set isAuthenticated to false
+    this.logout(); // This will also set isAuthenticated to false
+    this.router.navigate(['/auth']);
   }
 
   redirectToMicrosoftLogin() {

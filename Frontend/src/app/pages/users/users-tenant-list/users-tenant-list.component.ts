@@ -31,6 +31,13 @@ export class UsersTenantListComponent implements OnInit {
     supportsEdit: false,
     supportsDelete: true,
     defaultSortField: 'name',
+    customToolbarItems: [
+      {
+        label: 'Add Tenant',
+        icon: 'pi pi-plus',
+        onClick: () => this.addTenant(),
+      },
+    ],
     columns: [
       {
         field: 'name',
@@ -41,7 +48,7 @@ export class UsersTenantListComponent implements OnInit {
       {
         field: 'id',
         header: 'ID',
-        type: 'text',
+        type: 'id',
         sortable: true,
       },
     ],
@@ -78,5 +85,10 @@ export class UsersTenantListComponent implements OnInit {
   ngOnInit() {
     this.userId = this.route.snapshot.params['id'];
     console.log('userId', this.userId);
+  }
+
+  addTenant() {
+    console.log('Add tenant for user:', this.userId);
+    // TODO: Implement tenant addition logic
   }
 }

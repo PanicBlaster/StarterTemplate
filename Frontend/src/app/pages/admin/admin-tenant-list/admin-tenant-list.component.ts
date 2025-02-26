@@ -27,7 +27,7 @@ export class AdminTenantListComponent {
       {
         field: 'id',
         header: 'ID',
-        type: 'text',
+        type: 'id',
         sortable: true,
       },
       {

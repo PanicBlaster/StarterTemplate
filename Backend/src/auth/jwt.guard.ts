@@ -26,7 +26,7 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
       return true;
     } catch (error) {
       console.log(error);
-      throw new UnauthorizedException();
+      throw new UnauthorizedException('JWT expired');
     }
   }
 

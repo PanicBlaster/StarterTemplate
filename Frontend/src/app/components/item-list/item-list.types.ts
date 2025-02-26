@@ -6,7 +6,7 @@ import { Params } from '@angular/router';
 export interface ColumnDefinition {
   field: string;
   header: string;
-  type: 'text' | 'date' | 'number' | 'boolean' | 'select';
+  type: 'text' | 'date' | 'number' | 'boolean' | 'select' | 'id';
   format?: string; // For dates or numbers
   options?: { label: string; value: any }[]; // For select fields
   sortable?: boolean;

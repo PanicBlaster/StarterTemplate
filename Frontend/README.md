@@ -203,9 +203,174 @@ The application uses the following common imports:
 
 # AI Generation
 
-List pages should be generated like the user list page. List pages should use the item-list component.
+As a goal we should always be reusing base components. Each page should just be a configuration of base components.
 
-Detail pages should be generated like the user detail page. Detail pages should use the item-detail component.
+Base components
+
+- ItemList (Table) src/app/components/item-list/item-list-component.ts
+- ItemDetail (Form) src/app/components/item/detail/item-detail-component.ts
+
+List pages should be generated like the user list page. List pages should use the item-list component. Look at the user list page for an example.
+
+```typescript
+@Component({
+  selector: 'app-user-list',
+  standalone: true,
+  imports: [ItemListComponent],
+  template: `<app-item-list [config]="listConfig"></app-item-list>`,
+})
+export class UserListComponent {
+  listConfig: ItemListConfig = {
+    header: 'Users',
+    supportsAdd: true,
+    supportsEdit: true,
+    supportsDelete: true,
+    defaultSortField: 'username',
+    columns: [
+      {
+        field: 'username',
+        header: 'Username',
+        type: 'text',
+        sortable: true,
+      },
+      { field: 'email', header: 'Email', type: 'text', sortable: true },
+
+      {
+        field: 'createdAt',
+        header: 'Created',
+        type: 'date',
+        format: 'short',
+        sortable: true,
+      },
+    ],
+    dataService: {
+      parseParams: (params, queryParams) => ({
+        skip: queryParams['skip'] || 0,
+        take: queryParams['take'] || 10,
+        where: { tenantId: this.authService.getCurrentTenant()?.id },
+      }),
+      loadItems: (params) => this.accountService.getAccounts(params),
+      deleteItem: (params, item) => this.accountService.deleteAccount(item.id),
+    },
+  };
+
+  constructor(
+    private accountService: AccountService,
+    private authService: AuthService
+  ) {}
+}
+```
+
+Detail pages should be generated like the user detail page. Detail pages should use the item-detail component. Look at the user detail page for an example.
+
+```tyepscript
+@Component({
+  selector: 'app-user-detail',
+  standalone: true,
+  imports: [CommonModule, ItemDetailComponent, ToastModule],
+  providers: [MessageService],
+  template: `<app-item-detail [config]="detailConfig"></app-item-detail>`,
+})
+export class UserDetailComponent {
+  detailConfig: ItemDetailConfig = {
+    header: 'User Details',
+    isEditable: true,
+    supportsAdd: false,
+    supportsDelete: true,
+    updateSuccessMessage: 'User updated successfully',
+    breadcrumbField: 'username',
+    formLayout: [
+      { key: 'username', label: 'Username', type: 'text', required: true },
+      {
+        key: 'password',
+        label: 'Password',
+        type: 'password',
+        required: true,
+        newOnly: true,
+      },
+      { key: 'email', label: 'Email', type: 'text', required: true },
+      { key: 'firstName', label: 'First Name', type: 'text', required: true },
+      { key: 'lastName', label: 'Last Name', type: 'text', required: true },
+      {
+        key: 'role',
+        label: 'Role',
+        type: 'select',
+        required: true,
+        options: [
+          { label: 'Admin', value: 'admin' },
+          { label: 'User', value: 'user' },
+        ],
+      },
+    ],
+    customToolbarItems: [
+      {
+        label: 'Reset Password',
+        icon: 'pi pi-lock',
+        onClick: () => this.resetPassword(),
+      },
+      {
+        label: 'Tenants',
+        icon: 'pi pi-sitemap',
+        onClick: () => this.showTenants(),
+      },
+    ],
+    dataService: {
+      parseParams: (params, queryParams) => ({
+        id: params['id'],
+        where: { tenantId: this.authService.getCurrentTenant()?.id },
+        isNew: params['id'] === 'new',
+      }),
+      loadItem: (params) => this.accountService.getAccount(params.id || ''),
+      createItem: (params, item) => this.accountService.createAccount(item),
+      updateItem: (params, item) =>
+        this.accountService.updateAccount(params.id || '', item),
+      deleteItem: (params) =>
+        this.accountService.deleteAccount(params.id || ''),
+    },
+  };
+
+  constructor(
+    private accountService: AccountService,
+    private authService: AuthService,
+    private route: ActivatedRoute,
+    private router: Router
+  ) {
+    console.log('User detail Constructor');
+  }
+
+  ngOnInit() {
+    console.log('User detail ngOnInit');
+
+    this.route.snapshot.data['label'] = 'goodbye';
+  }
+
+  resetPassword() {
+    console.log('Reset password');
+  }
+
+  showTenants() {
+    console.log('Show tenants');
+    this.router.navigate(['tenants'], { relativeTo: this.route });
+  }
+}
+```
+
+Add custom actions. All custom actions should be put in the customToolbarItems array. The customToolbarItems array should be an array of objects with the following properties: label, icon, and onClick.
+
+```
+customToolbarItems: [
+  {
+    label: 'Reset Password',
+    icon: 'pi pi-lock',
+    onClick: () => this.resetPassword(),
+  },
+  {
+    label: 'Tenants',
+    icon: 'pi pi-sitemap',
+    onClick: () => this.showTenants(),
+  },
+],
+```
 
 <p align="center">
   Powered by <a href="#">Panic Blaster</a> 🚀

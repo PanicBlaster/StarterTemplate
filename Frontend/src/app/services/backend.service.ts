@@ -3,6 +3,7 @@ import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 import { Observable, catchError } from 'rxjs';
 import { environment } from '../../environments/environment';
 import { AuthService } from './auth.service';
+import { Router } from '@angular/router';
 
 @Injectable({
   providedIn: 'root',
@@ -10,7 +11,11 @@ import { AuthService } from './auth.service';
 export class BackendService {
   private baseUrl = environment.apiUrl;
 
-  constructor(private http: HttpClient, private authService: AuthService) {}
+  constructor(
+    private http: HttpClient,
+    private authService: AuthService,
+    private router: Router
+  ) {}
 
   private getHeaders(): HttpHeaders {
     let headers = new HttpHeaders();
@@ -27,7 +32,9 @@ export class BackendService {
 
   private handle401Error = (error: any) => {
     if (error.status === 401) {
-      this.authService.handleUnauthorized();
+      if ((error.error?.message ?? '').tolowerCase().includes('expired')) {
+        this.authService.handleUnauthorized();
+      }
     }
     throw error;
   };

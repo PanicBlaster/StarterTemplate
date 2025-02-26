@@ -10,6 +10,7 @@ import { ToastModule } from 'primeng/toast';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { ConfirmationService } from 'primeng/api';
 import { QueryOptions } from '../../dto/query.dto';
+import { IdDisplayPipe } from '../../pipes/id-display.pipe';
 
 @Component({
   selector: 'app-item-list',
@@ -21,6 +22,7 @@ import { QueryOptions } from '../../dto/query.dto';
     PageToolbarComponent,
     ToastModule,
     ConfirmDialogModule,
+    IdDisplayPipe, // Make sure IdDisplayPipe is standalone
   ],
   providers: [MessageService, ConfirmationService],
   template: `
@@ -74,6 +76,9 @@ import { QueryOptions } from '../../dto/query.dto';
               </span>
               <span *ngSwitchCase="'select'">
                 {{ getOptionLabel(col, item[col.field]) }}
+              </span>
+              <span *ngSwitchCase="'id'">
+                {{ item[col.field] | idDisplay }}
               </span>
               <span *ngSwitchDefault>{{ item[col.field] }}</span>
             </ng-container>
