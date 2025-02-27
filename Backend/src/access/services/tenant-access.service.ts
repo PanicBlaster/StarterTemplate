@@ -27,6 +27,14 @@ export class TenantAccess {
     private readonly httpService: HttpService
   ) {}
 
+  private mapToDto(tenant: Tenant): TenantDto {
+    return {
+      name: tenant.name,
+      description: tenant.description,
+      notes: tenant.notes,
+    };
+  }
+
   async findOneTenant(
     options: QueryOptionsDto
   ): Promise<QueryResultItem<TenantDto>> {
@@ -36,11 +44,7 @@ export class TenantAccess {
 
     if (!tenant) return null;
 
-    const dto = {
-      name: tenant.name,
-      description: tenant.description,
-      notes: tenant.notes,
-    } as TenantDto;
+    const dto = this.mapToDto(tenant);
 
     return {
       item: dto,
@@ -63,7 +67,8 @@ export class TenantAccess {
 
   async queryTenants(
     options: QueryOptionsDto & { userId?: string }
-  ): Promise<QueryResult<Tenant>> {
+  ): Promise<QueryResult<TenantDto>> {
+    // Changed return type to TenantDto
     let items = [];
     let total = 0;
 
@@ -86,7 +91,15 @@ export class TenantAccess {
       items = user.tenants;
       total = items.length;
     } else {
+      let where = options.where || {};
+      if (options.filter) {
+        where = {
+          ...where,
+          name: { $regex: options.filter, $options: 'i' },
+        };
+      }
       [items, total] = await this.tenantRepository.findAndCount({
+        where: where,
         take: options.take || 10,
         skip: options.skip || 0,
         order: options.order || { createdAt: 'DESC' },
@@ -95,7 +108,7 @@ export class TenantAccess {
 
     return {
       items: items.map((item) => ({
-        item,
+        item: this.mapToDto(item), // Now this correctly returns TenantDto
         id: item.id,
       })),
       total,

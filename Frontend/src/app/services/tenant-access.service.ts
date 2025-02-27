@@ -11,7 +11,7 @@ import { TenantDto, CreateTenantDto } from '../dto/tenant.dto';
   providedIn: 'root',
 })
 export class TenantAccessService {
-  constructor(private backend: BackendService) {}
+  constructor(private backend: BackendService, private http: HttpClient) {}
 
   getTenants(params: QueryOptions): Observable<QueryResult<TenantDto>> {
     const queryParams: any = {
@@ -27,10 +27,18 @@ export class TenantAccessService {
     if (params.userId) {
       userParams = `user=${params.userId}`;
     }
+    let allParams = '';
+    if (params.all) {
+      allParams = `all=${params.all}`;
+    }
 
     return this.backend.get<QueryResult<TenantDto>>(
-      `tenant?take=${params.take}&skip=${params.skip}&${userParams}`
+      `tenant?take=${params.take}&skip=${params.skip}&${userParams}${allParams}`
     );
+  }
+
+  addTenantAccess(tenantId: string, userId: string): Observable<any> {
+    return this.http.post(`/api/tenants/${tenantId}/users/${userId}`, {});
   }
 
   removeTenantAccess(tenantId: string, userId: string): Observable<any> {

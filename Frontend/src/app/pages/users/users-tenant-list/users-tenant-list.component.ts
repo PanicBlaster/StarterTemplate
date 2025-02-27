@@ -1,28 +1,45 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute } from '@angular/router';
 import { ItemListComponent } from '../../../components/item-list/item-list.component';
 import { ItemListConfig } from '../../../components/item-list/item-list.types';
 import { TenantAccessService } from '../../../services/tenant-access.service';
 import { AccountService } from '../../../services/account.service';
-import { firstValueFrom } from 'rxjs';
+import { firstValueFrom, forkJoin, of } from 'rxjs';
 import { MessageService } from 'primeng/api';
 import { ToastModule } from 'primeng/toast';
 import { ConfirmationService } from 'primeng/api';
+import { SelectDialogComponent } from '../../../components/select-dialog/select-dialog.component';
+import { SelectDialogConfig } from '../../../components/select-dialog/select-dialog.types';
+import { DialogModule } from 'primeng/dialog'; // Add this
 
 @Component({
   selector: 'app-users-tenant-list',
   standalone: true,
-  imports: [CommonModule, ItemListComponent, ToastModule],
+  imports: [
+    CommonModule,
+    ItemListComponent,
+    ToastModule,
+    SelectDialogComponent, // Make sure this is imported correctly
+    DialogModule, // Add this
+  ],
   providers: [
     TenantAccessService,
     AccountService,
     MessageService,
     ConfirmationService,
   ],
-  template: `<app-item-list [config]="listConfig"></app-item-list>`,
+  template: `
+    <app-item-list [config]="listConfig"></app-item-list>
+    <app-select-dialog
+      #selectDialog
+      [config]="selectDialogConfig"
+    ></app-select-dialog>
+  `,
 })
 export class UsersTenantListComponent implements OnInit {
+  @ViewChild('selectDialog') selectDialog!: SelectDialogComponent;
+
   userId: string = '';
 
   listConfig: ItemListConfig = {
@@ -33,8 +50,8 @@ export class UsersTenantListComponent implements OnInit {
     defaultSortField: 'name',
     customToolbarItems: [
       {
-        label: 'Add Tenant',
-        icon: 'pi pi-plus',
+        label: 'Link Tenant',
+        icon: 'pi pi-link',
         onClick: () => this.addTenant(),
       },
     ],
@@ -76,6 +93,35 @@ export class UsersTenantListComponent implements OnInit {
     },
   };
 
+  selectDialogConfig: SelectDialogConfig<any> = {
+    header: 'Select Tenants',
+    columns: [
+      {
+        field: 'name',
+        header: 'Name',
+        type: 'text',
+      },
+      {
+        field: 'id',
+        header: 'ID',
+        type: 'id',
+      },
+    ],
+    dataService: {
+      loadItems: (params) => {
+        return this.tenantAccessService.getTenants({
+          ...params,
+          all: true,
+        });
+      },
+      selectItems: (items) => {
+        const requests = items.map((item) =>
+          this.tenantAccessService.addTenantAccess(item.id, this.userId)
+        );
+      },
+    },
+  };
+
   constructor(
     private tenantAccessService: TenantAccessService,
     private accountService: AccountService,
@@ -88,7 +134,6 @@ export class UsersTenantListComponent implements OnInit {
   }
 
   addTenant() {
-    console.log('Add tenant for user:', this.userId);
-    // TODO: Implement tenant addition logic
+    this.selectDialog.show();
   }
 }

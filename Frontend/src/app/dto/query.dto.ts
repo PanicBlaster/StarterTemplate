@@ -19,6 +19,8 @@ export interface QueryOptions {
   order?: Record<string, any>;
   tenantId?: string;
   userId?: string;
+  all?: boolean;
+  filter?: string;
 }
 
 export interface ProcessResult {

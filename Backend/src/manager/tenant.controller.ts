@@ -49,16 +49,10 @@ export class TenantController {
   })
   async queryTenants(
     @Query('user') userIdentifier?: string,
+    @Query(ValidationPipe) query?: QueryOptionsDto,
     @Headers('X-Tenant-ID') tenantId?: string
   ) {
     let userId = undefined;
-
-    const query: QueryOptionsDto = {
-      where: {},
-      order: {
-        createdAt: 'DESC',
-      },
-    };
 
     if (userIdentifier) {
       // Try to find user by id, email or username
@@ -75,7 +69,7 @@ export class TenantController {
       }
     }
 
-    if (tenantId) {
+    if (tenantId && !query.all) {
       query.where = {
         ...(query.where || {}),
         id: tenantId,
@@ -87,7 +81,6 @@ export class TenantController {
       userId,
       where: {
         ...(query.where || {}),
-        ...(tenantId && { id: tenantId }),
       },
     });
   }

@@ -37,6 +37,14 @@ export class QueryOptionsDto {
   @ApiPropertyOptional({ description: 'Filter by user ID' })
   @IsOptional()
   userId?: string;
+
+  @ApiPropertyOptional({ description: 'Filter text' })
+  @IsOptional()
+  filter?: string;
+
+  @ApiPropertyOptional({ description: 'All data' })
+  @IsOptional()
+  all?: boolean;
 }
 
 export interface QueryResultItem<T> {
