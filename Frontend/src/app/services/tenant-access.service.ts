@@ -43,11 +43,14 @@ export class TenantAccessService {
   }
 
   addTenantAccess(tenantId: string, userId: string): Observable<any> {
-    return this.http.post(`/api/tenants/${tenantId}/users/${userId}`, {});
+    return this.backend.post(`tenant/${tenantId}/user/${userId}`, {
+      tenantId,
+      userId,
+    });
   }
 
   removeTenantAccess(tenantId: string, userId: string): Observable<any> {
-    return this.backend.delete(`tenant/${tenantId}/users/${userId}`);
+    return this.backend.delete(`tenant/${tenantId}/user/${userId}`);
   }
 
   deleteTenant(tenantId: string): Observable<any> {

@@ -30,7 +30,7 @@ import { DialogModule } from 'primeng/dialog'; // Add this
     ConfirmationService,
   ],
   template: `
-    <app-item-list [config]="listConfig"></app-item-list>
+    <app-item-list #list [config]="listConfig"></app-item-list>
     <app-select-dialog
       #selectDialog
       [config]="selectDialogConfig"
@@ -39,6 +39,7 @@ import { DialogModule } from 'primeng/dialog'; // Add this
 })
 export class UsersTenantListComponent implements OnInit {
   @ViewChild('selectDialog') selectDialog!: SelectDialogComponent;
+  @ViewChild('list') list!: ItemListComponent;
 
   userId: string = '';
 
@@ -115,9 +116,12 @@ export class UsersTenantListComponent implements OnInit {
         });
       },
       selectItems: (items) => {
-        const requests = items.map((item) =>
-          this.tenantAccessService.addTenantAccess(item.id, this.userId)
-        );
+        const requests = items.map((item) => {
+          firstValueFrom(
+            this.tenantAccessService.addTenantAccess(item.id, this.userId)
+          );
+          this.list.refresh();
+        });
       },
     },
   };

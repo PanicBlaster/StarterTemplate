@@ -176,4 +176,30 @@ export class TenantController {
 
     return this.tenantAccess.removeTenant({ id });
   }
+
+  @Post(':tenantId/user/:userId')
+  @ApiOperation({ summary: 'Add user to tenant' })
+  async addUserToTenant(
+    @Param('tenantId') tenantId: string,
+    @Param('userId') userId: string
+  ) {
+    await this.tenantAccess.addUserToTenant(tenantId, userId);
+    return {
+      message: 'User added to tenant successfully',
+      status: 'success',
+    };
+  }
+
+  @Delete(':tenantId/user/:userId')
+  @ApiOperation({ summary: 'Remove user from tenant' })
+  async removeUserFromTenant(
+    @Param('tenantId') tenantId: string,
+    @Param('userId') userId: string
+  ) {
+    await this.tenantAccess.removeUserFromTenant(tenantId, userId);
+    return {
+      message: 'User removed from tenant successfully',
+      status: 'success',
+    };
+  }
 }

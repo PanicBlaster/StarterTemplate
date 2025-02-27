@@ -139,6 +139,14 @@ export class ItemListComponent implements OnInit {
 
   ngOnInit() {}
 
+  refresh() {
+    this.loadData({
+      skip: 0,
+      take: 10,
+      sortField: this.config.defaultSortField,
+    });
+  }
+
   loadData(event: any) {
     this.header = this.config.header;
     this.loading = true;
@@ -148,8 +156,8 @@ export class ItemListComponent implements OnInit {
     );
 
     // Add pagination and sorting to params
-    params.skip = event.first;
-    params.take = event.rows;
+    params.skip = event.first ?? event.skip;
+    params.take = event.rows ?? event.take;
     if (event.sortField) {
       params.order = { [event.sortField]: event.sortOrder };
     }

@@ -152,4 +152,43 @@ export class TenantAccess {
     const tenant = await this.findOneTenant({ id: tenantId });
     return !!tenant;
   }
+
+  async addUserToTenant(tenantId: string, userId: string): Promise<void> {
+    const tenant = await this.tenantRepository.findOne({
+      where: { id: tenantId },
+      relations: ['users'],
+    });
+    if (!tenant) {
+      throw new NotFoundException('Tenant not found');
+    }
+
+    const user = await this.userRepository.findOne({
+      where: { id: userId },
+    });
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    if (!tenant.users) {
+      tenant.users = [];
+    }
+
+    if (!tenant.users.find((u) => u.id === userId)) {
+      tenant.users.push(user);
+      await this.tenantRepository.save(tenant);
+    }
+  }
+
+  async removeUserFromTenant(tenantId: string, userId: string): Promise<void> {
+    const tenant = await this.tenantRepository.findOne({
+      where: { id: tenantId },
+      relations: ['users'],
+    });
+    if (!tenant) {
+      throw new NotFoundException('Tenant not found');
+    }
+
+    tenant.users = tenant.users.filter((user) => user.id !== userId);
+    await this.tenantRepository.save(tenant);
+  }
 }
