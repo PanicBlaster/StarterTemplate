@@ -20,6 +20,7 @@ export interface QueryOptions {
   tenantId?: string;
   userId?: string;
   all?: boolean;
+  excludeMine?: boolean;
   filter?: string;
 }
 

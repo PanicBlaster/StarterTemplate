@@ -58,15 +58,15 @@ export class UsersTenantListComponent implements OnInit {
     ],
     columns: [
       {
-        field: 'name',
-        header: 'Name',
-        type: 'text',
-        sortable: true,
-      },
-      {
         field: 'id',
         header: 'ID',
         type: 'id',
+        sortable: true,
+      },
+      {
+        field: 'name',
+        header: 'Name',
+        type: 'text',
         sortable: true,
       },
     ],
@@ -102,17 +102,14 @@ export class UsersTenantListComponent implements OnInit {
         header: 'Name',
         type: 'text',
       },
-      {
-        field: 'id',
-        header: 'ID',
-        type: 'id',
-      },
     ],
     dataService: {
       loadItems: (params) => {
         return this.tenantAccessService.getTenants({
           ...params,
+          userId: this.userId,
           all: true,
+          excludeMine: true,
         });
       },
       selectItems: (items) => {

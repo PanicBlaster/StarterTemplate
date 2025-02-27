@@ -37,8 +37,13 @@ export class TenantAccessService {
       filterParams = `&filter=${params.filter}`;
     }
 
+    let excludeMine = '';
+    if (params.excludeMine) {
+      excludeMine = `&excludeMine=${params.excludeMine}`;
+    }
+
     return this.backend.get<QueryResult<TenantDto>>(
-      `tenant?take=${params.take}&skip=${params.skip}${userParams}${allParams}${filterParams}`
+      `tenant?take=${params.take}&skip=${params.skip}${userParams}${allParams}${filterParams}&${excludeMine}`
     );
   }
 

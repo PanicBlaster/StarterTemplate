@@ -45,6 +45,12 @@ export class QueryOptionsDto {
   @ApiPropertyOptional({ description: 'All data' })
   @IsOptional()
   all?: boolean;
+
+  @ApiPropertyOptional({
+    description: 'Exclude items that belong to the current user',
+  })
+  @IsOptional()
+  excludeMine?: boolean;
 }
 
 export interface QueryResultItem<T> {
