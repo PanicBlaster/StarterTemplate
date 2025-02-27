@@ -49,6 +49,7 @@ export class UsersTenantListComponent implements OnInit {
     supportsEdit: false,
     supportsDelete: true,
     defaultSortField: 'name',
+    enableSearch: true,
     customToolbarItems: [
       {
         label: 'Link Tenant',

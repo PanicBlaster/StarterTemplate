@@ -72,6 +72,15 @@ export class TenantAccess {
     let total = 0;
 
     const userId = options.userId;
+    let where = options.where || {};
+
+    if (options.filter) {
+      where = {
+        ...where,
+        name: ILike(`%${options.filter}%`),
+      };
+    }
+
     if (userId && !options.excludeMine && !options.all) {
       const user = await this.userRepository.findOne({
         where: { id: userId },
@@ -87,17 +96,20 @@ export class TenantAccess {
         };
       }
 
-      items = user.tenants;
-      total = items.length;
-    } else {
-      let where = options.where || {};
-      if (options.filter) {
+      if (user && user.tenants.length > 0) {
         where = {
           ...where,
-          name: ILike(`%${options.filter}%`),
+          id: In(user.tenants.map((t) => t.id)),
         };
       }
 
+      [items, total] = await this.tenantRepository.findAndCount({
+        where: where,
+        take: options.take || 10,
+        skip: options.skip || 0,
+        order: options.order || { createdAt: 'DESC' },
+      });
+    } else {
       if (options.excludeMine) {
         const user = await this.userRepository.findOne({
           where: { id: options.userId },

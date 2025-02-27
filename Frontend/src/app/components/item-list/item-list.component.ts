@@ -11,6 +11,8 @@ import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { ConfirmationService } from 'primeng/api';
 import { QueryOptions } from '../../dto/query.dto';
 import { IdDisplayPipe } from '../../pipes/id-display.pipe';
+import { InputTextModule } from 'primeng/inputtext';
+import { FormsModule } from '@angular/forms';
 
 @Component({
   selector: 'app-item-list',
@@ -23,6 +25,8 @@ import { IdDisplayPipe } from '../../pipes/id-display.pipe';
     ToastModule,
     ConfirmDialogModule,
     IdDisplayPipe, // Make sure IdDisplayPipe is standalone
+    InputTextModule,
+    FormsModule,
   ],
   providers: [MessageService, ConfirmationService],
   template: `
@@ -35,6 +39,19 @@ import { IdDisplayPipe } from '../../pipes/id-display.pipe';
       [metrics]="config.metrics"
       (onAdd)="handleAdd()"
     ></app-page-toolbar>
+
+    <div *ngIf="config.enableSearch" class="search-container mb-3">
+      <span class="p-input-icon-right full-width">
+        <input
+          type="text"
+          pInputText
+          [(ngModel)]="filterValue"
+          (ngModelChange)="onFilterChange($event)"
+          [placeholder]="config.searchPlaceholder || 'Search...'"
+          class="auto-width"
+        />
+      </span>
+    </div>
 
     <p-table
       #dt
@@ -115,6 +132,15 @@ import { IdDisplayPipe } from '../../pipes/id-display.pipe';
         border: none;
         padding: 0;
       }
+      .search-container {
+        margin-bottom: 1rem;
+      }
+      :host ::ng-deep .p-input-icon-right {
+        display: block;
+      }
+      :host ::ng-deep .p-input-icon-right input {
+        width: 100%;
+      }
     `,
   ],
 })
@@ -129,6 +155,7 @@ export class ItemListComponent implements OnInit {
   totalRecords: number = 0;
 
   queryParams: QueryOptions = {};
+  filterValue: string = '';
 
   constructor(
     private router: Router,
@@ -160,6 +187,11 @@ export class ItemListComponent implements OnInit {
     params.take = event.rows ?? event.take;
     if (event.sortField) {
       params.order = { [event.sortField]: event.sortOrder };
+    }
+
+    // Add filter to params
+    if (this.filterValue) {
+      params.filter = this.filterValue;
     }
 
     this.config.dataService.loadItems(params).subscribe({
@@ -240,5 +272,13 @@ export class ItemListComponent implements OnInit {
 
   getFilterFields(): string[] {
     return (this.config.columns || []).map((col) => col.field);
+  }
+
+  onFilterChange(event: any) {
+    this.loadData({
+      first: 0,
+      rows: 10,
+      filter: event,
+    });
   }
 }

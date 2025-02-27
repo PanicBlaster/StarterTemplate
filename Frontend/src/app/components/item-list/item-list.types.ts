@@ -33,4 +33,6 @@ export interface ItemListConfig {
   defaultSortField?: string;
   defaultSortOrder?: 1 | -1;
   rowsPerPageOptions?: number[];
+  enableSearch?: boolean;
+  searchPlaceholder?: string;
 }
