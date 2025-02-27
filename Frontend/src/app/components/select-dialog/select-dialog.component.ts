@@ -40,6 +40,8 @@ import { CheckboxModule } from 'primeng/checkbox';
       [resizable]="false"
       [maximizable]="true"
       styleClass="select-dialog"
+      [breakpoints]="{ '960px': '100vw', '640px': '100vw' }"
+      [contentStyle]="{ 'max-height': '100vh' }"
     >
       <div class="dialog-content">
         <div class="search-container mb-3">
@@ -152,6 +154,19 @@ import { CheckboxModule } from 'primeng/checkbox';
       }
       :host ::ng-deep .p-datatable-wrapper {
         height: 100%;
+      }
+      :host ::ng-deep .select-dialog.p-dialog {
+        margin: 0;
+      }
+      @media screen and (max-width: 960px) {
+        :host ::ng-deep .select-dialog.p-dialog {
+          width: 100vw !important;
+          height: 100vh !important;
+          max-height: 100vh !important;
+        }
+        :host ::ng-deep .select-dialog .p-dialog-content {
+          padding: 0 1rem 1rem 1rem;
+        }
       }
     `,
   ],
