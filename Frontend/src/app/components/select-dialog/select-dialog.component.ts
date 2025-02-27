@@ -198,7 +198,7 @@ export class SelectDialogComponent implements OnInit {
     const params = {
       skip: event.first,
       take: event.rows,
-      search: this.filterValue,
+      filter: this.filterValue,
     };
 
     this.config.dataService.loadItems(params).subscribe({

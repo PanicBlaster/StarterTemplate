@@ -25,15 +25,20 @@ export class TenantAccessService {
 
     let userParams = '';
     if (params.userId) {
-      userParams = `user=${params.userId}`;
+      userParams = `&user=${params.userId}`;
     }
     let allParams = '';
     if (params.all) {
-      allParams = `all=${params.all}`;
+      allParams = `&all=${params.all}`;
+    }
+
+    let filterParams = '';
+    if (params.filter) {
+      filterParams = `&filter=${params.filter}`;
     }
 
     return this.backend.get<QueryResult<TenantDto>>(
-      `tenant?take=${params.take}&skip=${params.skip}&${userParams}${allParams}`
+      `tenant?take=${params.take}&skip=${params.skip}${userParams}${allParams}${filterParams}`
     );
   }
 

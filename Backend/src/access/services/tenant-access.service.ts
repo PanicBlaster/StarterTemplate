@@ -1,7 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { HttpService } from '@nestjs/axios';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, ILike } from 'typeorm';
 import { v4 as uuidv4 } from 'uuid';
 import {
   ProcessResult,
@@ -68,7 +68,6 @@ export class TenantAccess {
   async queryTenants(
     options: QueryOptionsDto & { userId?: string }
   ): Promise<QueryResult<TenantDto>> {
-    // Changed return type to TenantDto
     let items = [];
     let total = 0;
 
@@ -95,7 +94,7 @@ export class TenantAccess {
       if (options.filter) {
         where = {
           ...where,
-          name: { $regex: options.filter, $options: 'i' },
+          name: ILike(`%${options.filter}%`),
         };
       }
       [items, total] = await this.tenantRepository.findAndCount({
@@ -108,7 +107,7 @@ export class TenantAccess {
 
     return {
       items: items.map((item) => ({
-        item: this.mapToDto(item), // Now this correctly returns TenantDto
+        item: this.mapToDto(item),
         id: item.id,
       })),
       total,
