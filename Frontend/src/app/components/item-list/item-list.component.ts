@@ -61,8 +61,6 @@ import { FormsModule } from '@angular/forms';
       [rows]="10"
       [rowsPerPageOptions]="config.rowsPerPageOptions || [10, 25, 50]"
       [loading]="loading"
-      [sortField]="config.defaultSortField"
-      [sortOrder]="config.defaultSortOrder || 1"
       [totalRecords]="totalRecords"
       (onLazyLoad)="loadData($event)"
       [lazy]="true"
@@ -73,12 +71,8 @@ import { FormsModule } from '@angular/forms';
     >
       <ng-template pTemplate="header">
         <tr>
-          <th
-            *ngFor="let col of config.columns"
-            [pSortableColumn]="col.sortable ? col.field : undefined"
-          >
+          <th *ngFor="let col of config.columns">
             {{ col.header }}
-            <p-sortIcon *ngIf="col.sortable" [field]="col.field"></p-sortIcon>
           </th>
           <th *ngIf="config.supportsEdit || config.supportsDelete">Actions</th>
         </tr>
@@ -170,7 +164,6 @@ export class ItemListComponent implements OnInit {
     this.loadData({
       skip: 0,
       take: 10,
-      sortField: this.config.defaultSortField,
     });
   }
 
@@ -182,12 +175,9 @@ export class ItemListComponent implements OnInit {
       this.route.snapshot.queryParams
     );
 
-    // Add pagination and sorting to params
+    // Add pagination to params
     params.skip = event.first ?? event.skip;
     params.take = event.rows ?? event.take;
-    if (event.sortField) {
-      params.order = { [event.sortField]: event.sortOrder };
-    }
 
     // Add filter to params
     if (this.filterValue) {
@@ -248,7 +238,6 @@ export class ItemListComponent implements OnInit {
             this.loadData({
               skip: 0,
               take: 10,
-              sortField: this.config.defaultSortField,
             });
           },
           error: (error) => {

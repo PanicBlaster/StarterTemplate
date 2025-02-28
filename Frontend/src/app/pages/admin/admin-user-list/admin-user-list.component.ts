@@ -16,8 +16,15 @@ export class AdminUserListComponent {
     supportsAdd: true,
     supportsEdit: true,
     supportsDelete: true,
+    enableSearch: true,
     defaultSortField: 'username',
     columns: [
+      {
+        field: 'id',
+        header: 'ID',
+        type: 'id',
+        sortable: true,
+      },
       {
         field: 'username',
         header: 'Username',

@@ -1,7 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { HttpService } from '@nestjs/axios';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, ILike, Not, In } from 'typeorm';
+import { Repository, ILike, Not, In, Raw } from 'typeorm';
 import { v4 as uuidv4 } from 'uuid';
 import {
   ProcessResult,
@@ -16,6 +16,7 @@ import {
 } from '../../common/dto/tenant.dto';
 import { Tenant } from '../entities/tenant.entity';
 import { User } from '../entities/user.entity';
+import { stringify } from 'querystring';
 
 @Injectable()
 export class TenantAccess {
@@ -81,6 +82,18 @@ export class TenantAccess {
       };
     }
 
+    // Process the order parameter for case-insensitive sorting
+    let orderBy = options.order || { createdAt: 'DESC' };
+
+    if (orderBy && typeof orderBy === 'string') {
+      try {
+        orderBy = JSON.parse(orderBy);
+      } catch (e) {
+        console.log(`Failed to parse order parameter: ${orderBy}`, e);
+        orderBy = { createdAt: 'DESC' };
+      }
+    }
+
     if (userId && !options.excludeMine && !options.all) {
       const user = await this.userRepository.findOne({
         where: { id: userId },
@@ -103,11 +116,12 @@ export class TenantAccess {
         };
       }
 
+      // Use the transformed order in queries
       [items, total] = await this.tenantRepository.findAndCount({
         where: where,
         take: options.take || 10,
         skip: options.skip || 0,
-        order: options.order || { createdAt: 'DESC' },
+        order: orderBy,
       });
     } else {
       if (options.excludeMine) {
@@ -124,11 +138,12 @@ export class TenantAccess {
         }
       }
 
+      // Use the transformed order in queries
       [items, total] = await this.tenantRepository.findAndCount({
         where: where,
         take: options.take || 10,
         skip: options.skip || 0,
-        order: options.order || { createdAt: 'DESC' },
+        order: orderBy,
       });
     }
 

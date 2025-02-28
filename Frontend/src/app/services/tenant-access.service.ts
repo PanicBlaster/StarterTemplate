@@ -42,8 +42,18 @@ export class TenantAccessService {
       excludeMine = `&excludeMine=${params.excludeMine}`;
     }
 
+    let orderParams = '';
+    if (params.order !== undefined) {
+      const order = params.order;
+      Object.keys(params.order).forEach((key) => {
+        var ascDesc = order[key] === 1 ? 'ASC' : 'DESC';
+        orderParams = `{"${key}": "${ascDesc}"}`;
+      });
+      orderParams = `&order=${orderParams}`;
+    }
+
     return this.backend.get<QueryResult<TenantDto>>(
-      `tenant?take=${params.take}&skip=${params.skip}${userParams}${allParams}${filterParams}&${excludeMine}`
+      `tenant?take=${params.take}&skip=${params.skip}${userParams}${allParams}${filterParams}${excludeMine}${orderParams}`
     );
   }
 

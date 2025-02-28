@@ -16,18 +16,19 @@ export class AdminTenantListComponent {
     supportsAdd: true,
     supportsEdit: true,
     supportsDelete: true,
+    enableSearch: true,
     defaultSortField: 'name',
     columns: [
-      {
-        field: 'name',
-        header: 'Name',
-        type: 'text',
-        sortable: true,
-      },
       {
         field: 'id',
         header: 'ID',
         type: 'id',
+        sortable: true,
+      },
+      {
+        field: 'name',
+        header: 'Name',
+        type: 'text',
         sortable: true,
       },
       {
@@ -42,6 +43,7 @@ export class AdminTenantListComponent {
       parseParams: (params, queryParams) => ({
         skip: queryParams['skip'] || 0,
         take: queryParams['take'] || 10,
+        all: true,
       }),
       loadItems: (params) => this.tenantService.getTenants(params),
       deleteItem: (params, item) => this.tenantService.deleteTenant(item.id),
