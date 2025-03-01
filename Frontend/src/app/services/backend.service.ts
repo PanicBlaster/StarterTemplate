@@ -4,6 +4,7 @@ import { Observable, catchError } from 'rxjs';
 import { environment } from '../../environments/environment';
 import { AuthService } from './auth.service';
 import { Router } from '@angular/router';
+import { QueryOptions, QueryResult } from '../dto/query.dto';
 
 @Injectable({
   providedIn: 'root',
@@ -38,6 +39,41 @@ export class BackendService {
     }
     throw error;
   };
+
+  getQuery<T>(path: string, params: QueryOptions): Observable<QueryResult<T>> {
+    let userParams = '';
+    if (params.userId) {
+      userParams = `&user=${params.userId}`;
+    }
+    let allParams = '';
+    if (params.all) {
+      allParams = `&all=${params.all}`;
+    }
+
+    let filterParams = '';
+    if (params.filter) {
+      filterParams = `&filter=${params.filter}`;
+    }
+
+    let excludeMine = '';
+    if (params.excludeMine) {
+      excludeMine = `&excludeMine=${params.excludeMine}`;
+    }
+
+    let orderParams = '';
+    if (params.order !== undefined) {
+      const order = params.order;
+      Object.keys(params.order).forEach((key) => {
+        var ascDesc = order[key] === 1 ? 'ASC' : 'DESC';
+        orderParams = `{"${key}": "${ascDesc}"}`;
+      });
+      orderParams = `&order=${orderParams}`;
+    }
+
+    return this.get<QueryResult<T>>(
+      `${path}?take=${params.take}&skip=${params.skip}${userParams}${allParams}${filterParams}${excludeMine}${orderParams}`
+    );
+  }
 
   get<T>(
     path: string,

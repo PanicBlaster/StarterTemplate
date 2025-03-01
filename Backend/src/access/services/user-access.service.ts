@@ -88,6 +88,15 @@ export class UserAccess {
       };
     }
 
+    if (options.tenantId) {
+      if (!options.all || !(await this.isUserAdmin(options.userId))) {
+        where = {
+          ...where,
+          tenants: { id: options.tenantId },
+        };
+      }
+    }
+
     const [items, total] = await this.userRepository.findAndCount({
       take: options.take || 10,
       skip: options.skip || 0,

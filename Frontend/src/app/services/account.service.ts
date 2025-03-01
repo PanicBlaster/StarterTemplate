@@ -55,9 +55,7 @@ export class AccountService {
   }
 
   getAccounts(queryParams: QueryOptions): Observable<QueryResult<UserDto>> {
-    return this.backend.get<UserDto[]>(
-      `account?skip=${queryParams.skip}&take=${queryParams.take}&sort=${queryParams.order}`
-    );
+    return this.backend.getQuery<UserDto>('account', queryParams);
   }
 
   addUserToTenant(tenantId: string, userId: string): Observable<any> {

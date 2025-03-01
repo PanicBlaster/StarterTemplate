@@ -81,20 +81,15 @@ export class AccountController {
       if (!isValidTenant) {
         throw new BadRequestException('Invalid tenant ID provided');
       }
-    } else {
-      // ensure the user is an admin
-      const user = await this.userAccess.findOneUser({
-        id: req.user.userId,
-      });
-      if (user?.item?.role !== 'admin') {
-        throw new UnauthorizedException('User must be an admin');
-      }
     }
 
     return this.userAccess.queryUsers({
+      userId: req.user.userId,
       take: query.take || 10,
       skip: query.skip || 0,
-      where: tenantId ? { tenants: { id: tenantId } } : query.where,
+      all: query.all,
+      tenantId: tenantId,
+      where: query.where,
     });
   }
 
