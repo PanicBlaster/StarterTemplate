@@ -95,7 +95,6 @@ export class AccountController {
       take: query.take || 10,
       skip: query.skip || 0,
       where: tenantId ? { tenants: { id: tenantId } } : query.where,
-      order: query.order || { createdAt: 'DESC' },
     });
   }
 
@@ -106,11 +105,13 @@ export class AccountController {
   @ApiResponse({ status: 404, description: 'Account not found' })
   async findOneUser(
     @Param('id') id: string,
+    @Request() req,
     @Headers('X-Tenant-ID') headerTenantId?: string
   ) {
     const user = await this.userAccess.findOneUser({
       id,
       tenantId: headerTenantId,
+      currentUserId: req.user.userId,
     });
     if (!user) {
       throw new NotFoundException(`Account with ID ${id} not found`);

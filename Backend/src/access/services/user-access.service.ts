@@ -4,7 +4,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, ILike } from 'typeorm';
 import { User } from '../entities/user.entity';
 import { v4 as uuidv4 } from 'uuid';
 import * as bcrypt from 'bcrypt';
@@ -46,6 +46,13 @@ export class UserAccess {
     };
   }
 
+  private async isUserAdmin(userId: string): Promise<boolean> {
+    const user = await this.userRepository.findOne({
+      where: { id: userId },
+    });
+    return user?.role === 'admin';
+  }
+
   async findOneUser(
     options: QueryOptionsDto
   ): Promise<QueryResultItem<UserDto> | null> {
@@ -57,9 +64,12 @@ export class UserAccess {
     if (!user) return null;
 
     if (options.tenantId) {
-      const tenant = user.tenants.find((t) => t.id === options.tenantId);
-      if (!tenant) {
-        return null;
+      const isAdmin = await this.isUserAdmin(options.currentUserId);
+      if (!isAdmin) {
+        const tenant = user.tenants.find((t) => t.id === options.tenantId);
+        if (!tenant) {
+          return null;
+        }
       }
     }
 
@@ -70,11 +80,19 @@ export class UserAccess {
   }
 
   async queryUsers(options: QueryOptionsDto): Promise<QueryResult<UserDto>> {
+    let where = options.where || {};
+    if (options.filter) {
+      where = {
+        ...where,
+        username: ILike(`%${options.filter}%`),
+      };
+    }
+
     const [items, total] = await this.userRepository.findAndCount({
       take: options.take || 10,
       skip: options.skip || 0,
-      where: options.where || {},
-      order: options.order || { createdAt: 'DESC' },
+      where: where,
+      order: { createdAt: 'DESC' },
       relations: ['tenants'],
     });
 

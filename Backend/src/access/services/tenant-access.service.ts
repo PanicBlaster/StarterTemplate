@@ -67,7 +67,7 @@ export class TenantAccess {
   }
 
   async queryTenants(
-    options: QueryOptionsDto & { userId?: string }
+    options: QueryOptionsDto
   ): Promise<QueryResult<TenantDto>> {
     let items = [];
     let total = 0;
@@ -80,18 +80,6 @@ export class TenantAccess {
         ...where,
         name: ILike(`%${options.filter}%`),
       };
-    }
-
-    // Process the order parameter for case-insensitive sorting
-    let orderBy = options.order || { createdAt: 'DESC' };
-
-    if (orderBy && typeof orderBy === 'string') {
-      try {
-        orderBy = JSON.parse(orderBy);
-      } catch (e) {
-        console.log(`Failed to parse order parameter: ${orderBy}`, e);
-        orderBy = { createdAt: 'DESC' };
-      }
     }
 
     if (userId && !options.excludeMine && !options.all) {
@@ -114,6 +102,13 @@ export class TenantAccess {
           ...where,
           id: In(user.tenants.map((t) => t.id)),
         };
+      } else {
+        return {
+          items: [],
+          total: 0,
+          take: options.take || 10,
+          skip: options.skip || 0,
+        };
       }
 
       // Use the transformed order in queries
@@ -121,7 +116,7 @@ export class TenantAccess {
         where: where,
         take: options.take || 10,
         skip: options.skip || 0,
-        order: orderBy,
+        order: { createdAt: 'DESC' },
       });
     } else {
       if (options.excludeMine) {
@@ -143,7 +138,7 @@ export class TenantAccess {
         where: where,
         take: options.take || 10,
         skip: options.skip || 0,
-        order: orderBy,
+        order: { createdAt: 'DESC' },
       });
     }
 

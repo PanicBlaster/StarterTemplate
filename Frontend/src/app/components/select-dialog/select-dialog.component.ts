@@ -244,7 +244,7 @@ export class SelectDialogComponent implements OnInit {
     this.loadData({ first: 0, rows: 10, filter: event });
   }
 
-  handleSelect() {
+  async handleSelect() {
     if (this.selectedItems.length === 0) return;
 
     this.config.dataService.selectItems(this.selectedItems);

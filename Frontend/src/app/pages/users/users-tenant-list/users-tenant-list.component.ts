@@ -113,11 +113,13 @@ export class UsersTenantListComponent implements OnInit {
           excludeMine: true,
         });
       },
-      selectItems: (items) => {
-        const requests = items.map((item) => {
-          firstValueFrom(
+      selectItems: async (items) => {
+        const requests = items.map(async (item) => {
+          await firstValueFrom(
             this.tenantAccessService.addTenantAccess(item.id, this.userId)
           );
+        });
+        Promise.all(requests).then(() => {
           this.list.refresh();
         });
       },

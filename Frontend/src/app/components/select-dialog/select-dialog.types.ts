@@ -11,7 +11,7 @@ export interface SelectDialogColumn {
 
 export interface SelectDialogDataService<T> {
   loadItems(params: QueryOptions): Observable<QueryResult<T>>;
-  selectItems(items: T[]): void;
+  selectItems(items: T[]): Promise<void>;
 }
 
 export interface SelectDialogConfig<T> {

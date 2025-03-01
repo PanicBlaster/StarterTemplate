@@ -26,45 +26,6 @@ export class QueryOptionsDto {
   @Type(() => Number)
   skip?: number;
 
-  @ApiPropertyOptional({
-    description: 'Where conditions as JSON string. Example: {"field":"value"}',
-    example: 'where={"name":"test","isActive":true}',
-  })
-  @IsString()
-  @IsOptional()
-  @Transform(({ value }) => {
-    try {
-      return value ? JSON.parse(value) : undefined;
-    } catch (e) {
-      return undefined;
-    }
-  })
-  where?: Record<string, any>;
-
-  @ApiPropertyOptional({
-    description:
-      'Order conditions as JSON string. Example: {"createdAt":"DESC"}',
-    example: '{"createdAt":"DESC"}',
-  })
-  @IsOptional()
-  @Transform(({ value }) => {
-    if (!value) return undefined;
-
-    try {
-      // Check if the value is already an object
-      if (typeof value === 'object' && value !== null) {
-        return value;
-      }
-
-      // Try to parse the string
-      return JSON.parse(value);
-    } catch (e) {
-      console.log(`Failed to parse order parameter: ${value}`, e);
-      return undefined;
-    }
-  })
-  order?: Record<string, 'ASC' | 'DESC'>;
-
   @ApiPropertyOptional({ description: 'Filter by tenant ID' })
   @IsOptional()
   tenantId?: string;
@@ -86,6 +47,10 @@ export class QueryOptionsDto {
   })
   @IsOptional()
   excludeMine?: boolean;
+
+  where?: Record<string, any>;
+
+  currentUserId?: string;
 }
 
 export interface QueryResultItem<T> {
