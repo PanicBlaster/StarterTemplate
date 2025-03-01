@@ -3,7 +3,6 @@ import { AccountController } from './account.controller';
 import { UserAccess } from '../access/services/user-access.service';
 import { TenantAccess } from '../access/services/tenant-access.service';
 import { BadRequestException, NotFoundException } from '@nestjs/common';
-import { CommandSucceededEvent } from 'typeorm';
 
 describe('AccountController', () => {
   let controller: AccountController;
@@ -32,13 +31,17 @@ describe('AccountController', () => {
     delete: jest.fn(),
     addToTenant: jest.fn(),
     changePassword: jest.fn(),
+    isUserAdmin: jest.fn(),
   };
 
   const mockTenantAccess = {
     validateTenantId: jest.fn(),
+    findOneTenant: jest.fn(),
   };
 
   beforeEach(async () => {
+    jest.clearAllMocks();
+
     const module: TestingModule = await Test.createTestingModule({
       controllers: [AccountController],
       providers: [
@@ -63,25 +66,29 @@ describe('AccountController', () => {
       mockUserAccess.findOneUser.mockResolvedValue(mockUser);
       mockTenantAccess.validateTenantId.mockResolvedValue(true);
 
-      const result = await controller.findOneUser('tenant1', '123');
+      const req = { user: { userId: '123' } };
+      const result = await controller.findOneUser('123', req, 'tenant1');
 
       expect(result).toEqual(mockUser.item);
+      expect(mockUserAccess.findOneUser).toHaveBeenCalled();
     });
 
     it('should throw NotFoundException when user not found', async () => {
       mockUserAccess.findOneUser.mockResolvedValue(null);
       mockTenantAccess.validateTenantId.mockResolvedValue(true);
 
-      await expect(controller.findOneUser('tenant1', '123')).rejects.toThrow(
-        NotFoundException
-      );
+      const req = { user: { userId: '123' } };
+      await expect(
+        controller.findOneUser('123', req, 'tenant1')
+      ).rejects.toThrow(NotFoundException);
     });
 
     it('should throw BadRequestException when tenant validation fails', async () => {
       mockTenantAccess.validateTenantId.mockResolvedValue(false);
 
+      const req = { user: { userId: '123' } };
       await expect(
-        controller.findOneUser('invalid-tenant', '123')
+        controller.findOneUser('123', req, 'invalid-tenant')
       ).rejects.toThrow(NotFoundException);
     });
   });
@@ -95,12 +102,13 @@ describe('AccountController', () => {
     };
 
     const req = {
-      user: { userId: '123', role: 'admin' },
+      user: { userId: '123' },
     };
 
     it('should return paginated users', async () => {
       mockUserAccess.queryUsers.mockResolvedValue(mockQueryResult);
       mockTenantAccess.validateTenantId.mockResolvedValue(true);
+      mockUserAccess.isUserAdmin.mockResolvedValue(false);
 
       const result = await controller.queryUsers(
         { take: 10, skip: 0 },
@@ -109,7 +117,14 @@ describe('AccountController', () => {
       );
 
       expect(result).toEqual(mockQueryResult);
-      expect(mockUserAccess.queryUsers).toHaveBeenCalled();
+      expect(mockUserAccess.queryUsers).toHaveBeenCalledWith(
+        expect.objectContaining({
+          take: 10,
+          skip: 0,
+          tenantId: 'tenant1',
+          userId: '123',
+        })
+      );
     });
 
     it('should throw BadRequestException when tenant validation fails', async () => {
@@ -118,6 +133,24 @@ describe('AccountController', () => {
       await expect(
         controller.queryUsers({ take: 10, skip: 0 }, req, 'invalid-tenant')
       ).rejects.toThrow(BadRequestException);
+    });
+
+    it('should include all parameter when user is admin', async () => {
+      mockUserAccess.queryUsers.mockResolvedValue(mockQueryResult);
+      mockTenantAccess.validateTenantId.mockResolvedValue(true);
+      mockUserAccess.isUserAdmin.mockResolvedValue(true);
+
+      await controller.queryUsers(
+        { take: 10, skip: 0, all: true },
+        { user: { userId: 'admin1' } },
+        'tenant1'
+      );
+
+      expect(mockUserAccess.queryUsers).toHaveBeenCalledWith(
+        expect.objectContaining({
+          all: true,
+        })
+      );
     });
   });
 
@@ -128,10 +161,13 @@ describe('AccountController', () => {
       email: 'updated@example.com',
     };
 
+    const req = {
+      user: { userId: '123' },
+    };
+
     it('should update user successfully', async () => {
       mockUserAccess.findOneUser.mockResolvedValue(mockUser);
       mockUserAccess.upsertUser.mockResolvedValue('123');
-      mockTenantAccess.validateTenantId.mockResolvedValue(true);
 
       const result = await controller.updateUser('123', updateData);
 
@@ -145,11 +181,21 @@ describe('AccountController', () => {
         '123'
       );
     });
+
+    it('should throw NotFoundException when user not found', async () => {
+      mockUserAccess.findOneUser.mockResolvedValue(null);
+
+      const result = await controller.updateUser('1234', updateData);
+      expect(result).toEqual({
+        id: '1234',
+        message: 'User updated successfully',
+        success: true,
+      });
+    });
   });
 
   describe('changePassword', () => {
     const passwordData = {
-      userId: '123',
       currentPassword: 'oldpass',
       newPassword: 'newpass',
     };
@@ -160,9 +206,14 @@ describe('AccountController', () => {
 
     it('should change password successfully', async () => {
       mockUserAccess.changePassword.mockResolvedValue(undefined);
-      mockTenantAccess.validateTenantId.mockResolvedValue(true);
 
-      const result = await controller.changePassword(passwordData, req);
+      const result = await controller.changePassword(
+        {
+          userId: '123',
+          ...passwordData,
+        },
+        req
+      );
 
       expect(result).toEqual({
         message: 'Password changed successfully',
@@ -174,6 +225,22 @@ describe('AccountController', () => {
         passwordData.currentPassword,
         passwordData.newPassword
       );
+    });
+
+    it('should throw an error if password change fails', async () => {
+      const error = new Error('Password change failed');
+      mockUserAccess.changePassword.mockRejectedValue(error);
+
+      await expect(
+        controller.changePassword(
+          {
+            userId: '123',
+            currentPassword: 'oldpass',
+            newPassword: 'newpass',
+          },
+          req
+        )
+      ).rejects.toThrow(error);
     });
   });
 });
