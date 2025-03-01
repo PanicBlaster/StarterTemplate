@@ -24,6 +24,7 @@ export class AdminUserListComponent {
         header: 'ID',
         type: 'id',
         sortable: true,
+        mobileHide: true,
       },
       {
         field: 'username',
@@ -42,12 +43,14 @@ export class AdminUserListComponent {
         header: 'First Name',
         type: 'text',
         sortable: true,
+        mobileHide: true,
       },
       {
         field: 'lastName',
         header: 'Last Name',
         type: 'text',
         sortable: true,
+        mobileHide: true,
       },
       {
         field: 'createdAt',
@@ -55,6 +58,7 @@ export class AdminUserListComponent {
         type: 'date',
         format: 'short',
         sortable: true,
+        mobileHide: true,
       },
     ],
     dataService: {

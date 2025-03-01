@@ -36,14 +36,32 @@ export class TenantAccess {
     };
   }
 
+  private async isUserAdmin(userId: string): Promise<boolean> {
+    const user = await this.userRepository.findOne({
+      where: { id: userId },
+    });
+    return user?.role === 'admin';
+  }
+
   async findOneTenant(
     options: QueryOptionsDto
   ): Promise<QueryResultItem<TenantDto>> {
     const tenant = await this.tenantRepository.findOne({
       where: { id: options.id },
+      relations: ['users'],
     });
 
     if (!tenant) return null;
+
+    if (
+      (await this.isUserAdmin(options.currentUserId)) ||
+      tenant.users.find((u) => u.id === options.currentUserId)
+    ) {
+      return {
+        item: this.mapToDto(tenant),
+        id: tenant.id,
+      };
+    }
 
     const dto = this.mapToDto(tenant);
 

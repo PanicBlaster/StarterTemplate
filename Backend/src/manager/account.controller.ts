@@ -89,6 +89,7 @@ export class AccountController {
       skip: query.skip || 0,
       all: query.all,
       tenantId: tenantId,
+      filter: query.filter,
       where: query.where,
     });
   }

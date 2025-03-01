@@ -7,6 +7,7 @@ import {
   Body,
   Param,
   UseGuards,
+  Request,
   Query,
   Headers,
   BadRequestException,
@@ -91,15 +92,13 @@ export class TenantController {
   @ApiResponse({ status: 404, description: 'Tenant not found' })
   async findOneTenant(
     @Headers('X-Tenant-ID') tenantId: string,
+    @Request() req,
     @Param('id') id: string
   ) {
-    if (tenantId && tenantId !== id) {
-      throw new BadRequestException(
-        'Tenant ID in header must match requested tenant ID'
-      );
-    }
-
-    const tenant = await this.tenantAccess.findOneTenant({ id });
+    const tenant = await this.tenantAccess.findOneTenant({
+      id,
+      userId: req.user.userId,
+    });
     if (!tenant) {
       throw new NotFoundException('Tenant not found');
     }

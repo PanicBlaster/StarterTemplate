@@ -24,6 +24,7 @@ export class AdminTenantListComponent {
         header: 'ID',
         type: 'id',
         sortable: true,
+        mobileHide: true,
       },
       {
         field: 'name',
@@ -37,6 +38,7 @@ export class AdminTenantListComponent {
         type: 'date',
         format: 'short',
         sortable: true,
+        mobileHide: true,
       },
     ],
     dataService: {

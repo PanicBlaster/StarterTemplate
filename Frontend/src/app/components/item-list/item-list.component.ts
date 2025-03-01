@@ -1,4 +1,4 @@
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, Input, OnInit, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { TableModule } from 'primeng/table';
 import { ButtonModule } from 'primeng/button';
@@ -13,6 +13,7 @@ import { QueryOptions } from '../../dto/query.dto';
 import { IdDisplayPipe } from '../../pipes/id-display.pipe';
 import { InputTextModule } from 'primeng/inputtext';
 import { FormsModule } from '@angular/forms';
+import { ShortDatePipe } from '../../pipes/short-date.pipe';
 
 @Component({
   selector: 'app-item-list',
@@ -27,6 +28,7 @@ import { FormsModule } from '@angular/forms';
     IdDisplayPipe, // Make sure IdDisplayPipe is standalone
     InputTextModule,
     FormsModule,
+    ShortDatePipe,
   ],
   providers: [MessageService, ConfirmationService],
   template: `
@@ -35,7 +37,7 @@ import { FormsModule } from '@angular/forms';
       [supportsAdd]="config.supportsAdd || false"
       [supportsEdit]="false"
       [canMockData]="false"
-      [actions]="config.customToolbarItems || []"
+      [actions]="getAllToolbarItems()"
       [metrics]="config.metrics"
       (onAdd)="handleAdd()"
     ></app-page-toolbar>
@@ -56,7 +58,7 @@ import { FormsModule } from '@angular/forms';
     <p-table
       #dt
       [value]="flatItems"
-      [columns]="config.columns"
+      [columns]="getVisibleColumns()"
       [paginator]="true"
       [rows]="10"
       [rowsPerPageOptions]="config.rowsPerPageOptions || [10, 25, 50]"
@@ -67,11 +69,10 @@ import { FormsModule } from '@angular/forms';
       dataKey="id"
       [showCurrentPageReport]="true"
       currentPageReportTemplate="Showing {first} to {last} of {totalRecords} entries"
-      [globalFilterFields]="getFilterFields()"
     >
       <ng-template pTemplate="header">
         <tr>
-          <th *ngFor="let col of config.columns">
+          <th *ngFor="let col of getVisibleColumns()">
             {{ col.header }}
           </th>
           <th *ngIf="config.supportsEdit || config.supportsDelete">Actions</th>
@@ -80,10 +81,10 @@ import { FormsModule } from '@angular/forms';
 
       <ng-template pTemplate="body" let-item>
         <tr>
-          <td *ngFor="let col of config.columns">
+          <td *ngFor="let col of getVisibleColumns()">
             <ng-container [ngSwitch]="col.type">
               <span *ngSwitchCase="'date'">
-                {{ item[col.field] | date : col.format || 'medium' }}
+                {{ item[col.field] | shortDate }}
               </span>
               <span *ngSwitchCase="'select'">
                 {{ getOptionLabel(col, item[col.field]) }}
@@ -150,6 +151,12 @@ export class ItemListComponent implements OnInit {
 
   queryParams: QueryOptions = {};
   filterValue: string = '';
+  isMobile: boolean = false;
+
+  @HostListener('window:resize', ['$event'])
+  onResize(event?: any) {
+    this.checkScreenSize();
+  }
 
   constructor(
     private router: Router,
@@ -158,9 +165,20 @@ export class ItemListComponent implements OnInit {
     private confirmationService: ConfirmationService
   ) {}
 
-  ngOnInit() {}
+  ngOnInit() {
+    this.checkScreenSize();
+  }
+
+  checkScreenSize() {
+    this.isMobile = window.innerWidth < 768;
+  }
+
+  getAllToolbarItems() {
+    return [...(this.config.customToolbarItems || [])];
+  }
 
   refresh() {
+    this.filterValue = '';
     this.loadData({
       skip: 0,
       take: 10,
@@ -259,8 +277,12 @@ export class ItemListComponent implements OnInit {
     return option ? option.label : value;
   }
 
-  getFilterFields(): string[] {
-    return (this.config.columns || []).map((col) => col.field);
+  getVisibleColumns() {
+    if (!this.config?.columns) return [];
+    const columns = this.isMobile
+      ? this.config.columns.filter((col) => !col.mobileHide)
+      : this.config.columns;
+    return columns;
   }
 
   onFilterChange(event: any) {

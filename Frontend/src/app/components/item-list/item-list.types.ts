@@ -12,6 +12,7 @@ export interface ColumnDefinition {
   sortable?: boolean;
   filterable?: boolean;
   width?: string;
+  mobileHide?: boolean; // Add this property
 }
 
 export interface ItemListDataService<T> {
