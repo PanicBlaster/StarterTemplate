@@ -1,4 +1,4 @@
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, Input, OnInit, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
 import { MenubarModule } from 'primeng/menubar';
@@ -22,7 +22,7 @@ import { AuthService } from '../../services/auth.service';
     MenuModule,
   ],
   template: `
-    <div class="header-container">
+    <div class="header-container" [ngClass]="{ 'dark-header': isDarkMode }">
       <p-menubar
         [model]="menuItems"
         [style]="{
@@ -65,8 +65,14 @@ import { AuthService } from '../../services/auth.service';
         left: 0;
         right: 0;
         z-index: 1000;
-        background-color: var(--surface-card);
+        background-color: white;
         box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        transition: background-color 0.3s ease;
+      }
+
+      .dark-header {
+        background-color: #1e1e1e;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
       }
 
       :host ::ng-deep {
@@ -106,10 +112,22 @@ export class HeaderComponent implements OnInit {
 
   constructor(private authService: AuthService, private router: Router) {}
 
+  @HostListener('window:load')
+  @HostListener('window:DOMContentLoaded')
+  onLoad() {
+    this.detectTheme();
+  }
+
   ngOnInit() {
     this.authService.isAuthenticated$.subscribe((isAuthenticated) => {
       this.isAuthenticated = isAuthenticated;
     });
+    this.detectTheme();
+  }
+
+  detectTheme() {
+    const isDarkTheme = document.body.classList.contains('dark');
+    this.isDarkMode = isDarkTheme;
   }
 
   getUserInitials(): string {
