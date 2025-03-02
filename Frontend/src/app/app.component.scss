@@ -1,31 +1,38 @@
 
 
+.app-container {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
 .footer {
-    padding: 1rem;
-    background-color: var(--surface-card);
-    border-top: 1px solid var(--surface-border);
-    margin-top: auto;
+  background-color: var(--surface-card);
+  padding: 1rem;
+  text-align: center;
+  font-size: 0.875rem;
+  color: var(--text-color-secondary);
 }
 
 .footer-content {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 0 1rem;
-    font-size: 0.875rem;
-    color: var(--text-color-secondary);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  max-width: 1200px;
+  margin: 0 auto;
 }
 
 .version {
-    opacity: 0.8;
+  color: var(--text-color-secondary);
+  font-size: 0.75rem;
 }
 
 .breadcrumb-container {
-  margin: 5x;
+  margin-top: 50px; /* Add margin to account for fixed header */
+  padding: 0.5rem 1rem;
 }
 
 .main-content {
-  margin: 10px;
+  flex: 1;
+  padding: 1rem;  
 }

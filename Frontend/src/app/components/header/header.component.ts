@@ -22,43 +22,77 @@ import { AuthService } from '../../services/auth.service';
     MenuModule,
   ],
   template: `
-    <p-menubar
-      [model]="menuItems"
-      [style]="{
-        border: 'none',
-        background: 'transparent',
+    <div class="header-container">
+      <p-menubar
+        [model]="menuItems"
+        [style]="{
+          border: 'none',
+          background: 'transparent'
+        }"
+      >
+        <ng-template pTemplate="start">
+          <img src="logo.svg" height="40" class="mr-2" />
+        </ng-template>
 
-      }"
-    >
-      <ng-template pTemplate="start">
-        <img src="logo.svg" height="40" class="mr-2" />
-      </ng-template>
-
-      <ng-template pTemplate="end" *ngIf="isAuthenticated">
-        <div class="header-buttons">
-          <button
-            pButton
-            type="button"
-            icon="pi pi-cog"
-            class="p-button-rounded p-button-text mr-2"
-            pTooltip="Admin"
-            [routerLink]="['/admin']"
-          ></button>
-          <p-menu #menu [model]="profileItems" [popup]="true"></p-menu>
-          <p-avatar
-            [label]="getUserInitials()"
-            shape="circle"
-            size="normal"
-            styleClass="mr-2 cursor-pointer"
-            (click)="menu.toggle($event)"
-          ></p-avatar>
-        </div>
-      </ng-template>
-    </p-menubar>
+        <ng-template pTemplate="end" *ngIf="isAuthenticated">
+          <div class="header-buttons">
+            <button
+              pButton
+              type="button"
+              icon="pi pi-cog"
+              class="p-button-rounded p-button-text mr-2"
+              pTooltip="Admin"
+              [routerLink]="['/admin']"
+            ></button>
+            <p-menu #menu [model]="profileItems" [popup]="true"></p-menu>
+            <p-avatar
+              [label]="getUserInitials()"
+              shape="circle"
+              size="normal"
+              styleClass="mr-2 cursor-pointer"
+              (click)="menu.toggle($event)"
+            ></p-avatar>
+          </div>
+        </ng-template>
+      </p-menubar>
+    </div>
   `,
   styles: [
     `
-      // ...existing styles...
+      .header-container {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        z-index: 1000;
+        background-color: var(--surface-card);
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+      }
+
+      :host ::ng-deep {
+        .p-menubar {
+          background: transparent;
+          border: none;
+          padding: 0;
+        }
+
+        .p-avatar {
+          cursor: pointer;
+          &:hover {
+            opacity: 0.8;
+          }
+        }
+
+        .p-menuitem-link:focus {
+          box-shadow: none;
+        }
+      }
+
+      .header-buttons {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+      }
     `,
   ],
 })
