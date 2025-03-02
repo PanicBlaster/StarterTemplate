@@ -1,63 +1,27 @@
-<div class="layout">
-  <p-menubar class="top-menu" [model]="menuItems">
-    <ng-template pTemplate="start">
-      <img src="logo.svg" height="40" class="mr-2" alt="logo" />
-    </ng-template>
-    <ng-template pTemplate="end">
-      <div class="user-profile" *ngIf="isAuthenticated">
-        <p-button
-          icon="pi pi-cog"
-          styleClass="p-button-rounded p-button-text mr-2"
-          [routerLink]="['/admin']"
-          pTooltip="System Configuration"
-        ></p-button>
-        <p-button
-          icon="pi pi-bell"
-          styleClass="p-button-rounded p-button-text mr-2"
-          [routerLink]="['/notifications']"
-          pTooltip="Notifications"
-        ></p-button>
-        <p-avatar
-          class="avatar2"
-          [image]="avatarUrl"
-          shape="circle"
-          [style]="{ cursor: 'pointer' }"
-          (click)="menu.toggle($event)"
-        ></p-avatar>
-        <p-menu #menu [popup]="true" [model]="profileItems"></p-menu>
-      </div>
-    </ng-template>
-  </p-menubar>
+<div class="app-container">
+  <app-header
+    [menuItems]="menuItems"
+    [profileItems]="profileItems"
+    [version]="version"
+  >
+  </app-header>
 
-  <div class="content">
-    <div class="breadcrumb-container" *ngIf="isAuthenticated">
-      <p-breadcrumb
-        [home]="home"
-        [model]="breadcrumbItems"
-        [styleClass]="'border-none surface-ground'"
-      >
-        <ng-template #item let-item>
-          <ng-container *ngIf="item">
-            <a [routerLink]="item.routerLink" class="p-breadcrumb-item-link">
-              <span class="breadcrumb-icon" [class]="item.icon"></span>
-              <span
-                class="breadcrumb-label"
-                [class.hidden-mobile]="displayMode === 'mobile'"
-              >
-                {{ item.label }}
-              </span>
-            </a>
-          </ng-container>
-        </ng-template>
-      </p-breadcrumb>
-    </div>
-    <router-outlet></router-outlet>
+  <div class="breadcrumb-container" *ngIf="breadcrumbItems.length > 0">
+    <p-breadcrumb
+      [model]="breadcrumbItems"
+      [home]="home"
+      [style]="{ border: 'none', background: 'transparent' }"
+    ></p-breadcrumb>
   </div>
+
+  <main class="main-content">
+    <router-outlet></router-outlet>
+  </main>
 
   <footer class="footer">
     <div class="footer-content">
-      <span>&copy; {{ currentYear }} PanicBlaster</span>
-      <span class="version">v{{ version }}</span>
+      <p>&copy; {{ currentYear }} Panic Blaster. All rights reserved.</p>
+      <p class="version">v{{ version }}</p>
     </div>
   </footer>
 </div>

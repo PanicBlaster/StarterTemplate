@@ -1,16 +1,11 @@
 import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule, Router, ActivatedRoute } from '@angular/router';
-import { MenubarModule } from 'primeng/menubar';
 import { MenuItem } from 'primeng/api';
-import { AvatarModule } from 'primeng/avatar';
-import { MenuModule } from 'primeng/menu';
 import { ButtonModule } from 'primeng/button';
 import { AuthService } from './services/auth.service';
-import { TooltipModule } from 'primeng/tooltip';
 import { BreadcrumbModule } from 'primeng/breadcrumb';
-import { NavigationEnd } from '@angular/router';
-import { filter, map, Observable, of } from 'rxjs';
+import { HeaderComponent } from './components/header/header.component';
 import { BreadcrumbService } from './services/breadcrumb.service';
 import {
   DisplayMode,
@@ -31,18 +26,14 @@ export interface BreadcrumbItem {
   imports: [
     CommonModule,
     RouterModule,
-    MenubarModule,
-    AvatarModule,
-    MenuModule,
-    TooltipModule,
     ButtonModule,
     BreadcrumbModule,
+    HeaderComponent,
   ],
 })
 export class AppComponent implements OnInit {
   menuItems: MenuItem[] = [];
   profileItems: MenuItem[] = [];
-  avatarUrl = '';
   isAuthenticated = false;
   currentYear = new Date().getFullYear();
   version = '0.0.0'; // Default version
@@ -72,10 +63,6 @@ export class AppComponent implements OnInit {
   ngOnInit() {
     this.updateMenuItems();
     this.updateProfileItems();
-    this.avatarUrl = this.getAvatarUrl();
-
-    // Set home item
-    //this.breadcrumbService.setHome({ icon: 'pi pi-home', routerLink: '/' });
 
     // Subscribe to breadcrumbs
     this.breadcrumbService.breadcrumbsSubject
@@ -123,20 +110,5 @@ export class AppComponent implements OnInit {
     } else {
       this.profileItems = [];
     }
-  }
-
-  getAvatarUrl(): string {
-    var url = this.authService.getAvatarUrl();
-    if (url) {
-      return url;
-    }
-    return 'https://ui-avatars.com/api/?name=John+Doe';
-  }
-
-  isDarkMode = true;
-
-  toggleTheme() {
-    this.isDarkMode = !this.isDarkMode;
-    document.body.classList.toggle('dark', this.isDarkMode);
   }
 }
