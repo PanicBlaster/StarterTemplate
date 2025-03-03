@@ -128,7 +128,11 @@ export class HeaderComponent implements OnInit {
   }
 
   detectTheme() {
-    const isDarkTheme = document.body.classList.contains('dark');
+    var classes = document.body.classList;
+    console.log('Classes', classes);
+    const isDarkTheme = window.matchMedia(
+      '(prefers-color-scheme: dark)'
+    ).matches;
     this.isDarkMode = isDarkTheme;
   }
 
