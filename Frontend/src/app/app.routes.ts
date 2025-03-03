@@ -27,6 +27,15 @@ export const routes: Routes = [
     path: 'profile',
     component: ProfileComponent,
     title: 'Profile',
+    data: {
+      title: 'User',
+      icon: 'pi pi-user',
+      canReplace: true,
+      breadcrumb: [
+        { label: 'Profile', routerLink: ['/profile'], icon: 'pi pi-user' },
+      ],
+    },
+    canActivate: [authGuard],
   },
   {
     path: 'notifications',
