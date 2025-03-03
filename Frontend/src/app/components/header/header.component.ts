@@ -37,13 +37,15 @@ import { AuthService } from '../../services/auth.service';
         <ng-template pTemplate="end" *ngIf="isAuthenticated">
           <div class="header-buttons">
             <button
+              *ngFor="let item of staticMenuItems"
               pButton
               type="button"
-              icon="pi pi-cog"
               class="p-button-rounded p-button-text mr-2"
-              pTooltip="Admin"
-              [routerLink]="['/admin']"
+              icon="pi pi-cog"
+              visible="true"
+              [routerLink]="item.routerLink"
             ></button>
+
             <p-menu #menu [model]="profileItems" [popup]="true"></p-menu>
             <p-avatar
               [label]="getUserInitials()"
@@ -104,8 +106,8 @@ import { AuthService } from '../../services/auth.service';
 })
 export class HeaderComponent implements OnInit {
   @Input() menuItems: MenuItem[] = [];
+  @Input() staticMenuItems: MenuItem[] = [];
   @Input() profileItems: MenuItem[] = [];
-  @Input() version: string = '0.0.0';
 
   isAuthenticated = false;
   isDarkMode = true;

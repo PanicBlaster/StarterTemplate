@@ -34,12 +34,14 @@ export interface BreadcrumbItem {
 export class AppComponent implements OnInit {
   menuItems: MenuItem[] = [];
   profileItems: MenuItem[] = [];
+  staticMenuItems: MenuItem[] = [];
   isAuthenticated = false;
   currentYear = new Date().getFullYear();
   version = '0.0.0'; // Default version
   breadcrumbItems: MenuItem[] = [];
   home: MenuItem = { icon: 'pi pi-home', routerLink: '/' };
   displayMode: DisplayMode = getDisplayMode();
+  isDarkMode = localStorage.getItem('theme') === 'dark';
 
   constructor(
     public authService: AuthService,
@@ -58,6 +60,9 @@ export class AppComponent implements OnInit {
     window.addEventListener('resize', () => {
       this.displayMode = getDisplayMode();
     });
+
+    // Apply theme on initialization
+    document.body.classList.toggle('dark', this.isDarkMode);
   }
 
   ngOnInit() {
@@ -82,8 +87,17 @@ export class AppComponent implements OnInit {
           routerLink: ['/home'],
         },
       ];
+
+      this.staticMenuItems = [
+        {
+          label: 'Admin',
+          icon: 'pi pi-cog',
+          routerLink: ['/admin'],
+        },
+      ];
     } else {
       this.menuItems = [];
+      this.staticMenuItems = [];
     }
   }
 
