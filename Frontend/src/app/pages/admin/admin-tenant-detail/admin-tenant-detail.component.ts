@@ -1,5 +1,6 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { Router, ActivatedRoute } from '@angular/router';
 import { ItemDetailComponent } from '../../../components/item-detail/item-detail.component';
 import { ItemDetailConfig } from '../../../components/item-detail/item-detail.types';
 import { TenantAccessService } from '../../../services/tenant-access.service';
@@ -25,6 +26,13 @@ export class AdminTenantDetailComponent {
       { key: 'name', label: 'Name', type: 'text', required: true },
       { key: 'description', label: 'Description', type: 'text' },
     ],
+    customToolbarItems: [
+      {
+        label: 'Users',
+        icon: 'pi pi-users',
+        onClick: () => this.showTenantUsers(),
+      },
+    ],
     dataService: {
       parseParams: (params, queryParams) => ({
         id: params['id'],
@@ -38,5 +46,14 @@ export class AdminTenantDetailComponent {
     },
   };
 
-  constructor(private tenantService: TenantAccessService) {}
+  constructor(
+    private tenantService: TenantAccessService,
+    private router: Router,
+    private route: ActivatedRoute
+  ) {}
+
+  showTenantUsers() {
+    const tenantId = this.route.snapshot.params['id'];
+    this.router.navigate(['/admin/tenants', tenantId, 'users']);
+  }
 }

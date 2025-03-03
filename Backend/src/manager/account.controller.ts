@@ -90,6 +90,7 @@ export class AccountController {
       all: query.all,
       tenantId: tenantId,
       filter: query.filter,
+      excludeMine: query.excludeMine,
       where: query.where,
     });
   }

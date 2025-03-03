@@ -60,6 +60,11 @@ export class BackendService {
       excludeMine = `&excludeMine=${params.excludeMine}`;
     }
 
+    let tenantParams = '';
+    if (params.tenantId) {
+      tenantParams = `&tenantId=${params.tenantId}`;
+    }
+
     let orderParams = '';
     if (params.order !== undefined) {
       const order = params.order;
@@ -71,7 +76,7 @@ export class BackendService {
     }
 
     return this.get<QueryResult<T>>(
-      `${path}?take=${params.take}&skip=${params.skip}${userParams}${allParams}${filterParams}${excludeMine}${orderParams}`
+      `${path}?take=${params.take}&skip=${params.skip}${userParams}${allParams}${filterParams}${excludeMine}${orderParams}${tenantParams}`
     );
   }
 

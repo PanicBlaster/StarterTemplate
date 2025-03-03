@@ -15,6 +15,7 @@ import { AdminComponent } from './pages/admin/admin.component';
 import { AdminTenantListComponent } from './pages/admin/admin-tenant-list/admin-tenant-list.component';
 import { AdminUserListComponent } from './pages/admin/admin-user-list/admin-user-list.component';
 import { AdminTenantDetailComponent } from './pages/admin/admin-tenant-detail/admin-tenant-detail.component';
+import { AdminTenantUsersListComponent } from './pages/admin/admin-tenant-users-list/admin-tenant-users-list.component';
 
 export const routes: Routes = [
   { path: 'auth', component: AuthComponent },
@@ -27,15 +28,6 @@ export const routes: Routes = [
     path: 'profile',
     component: ProfileComponent,
     title: 'Profile',
-    data: {
-      title: 'User',
-      icon: 'pi pi-user',
-      canReplace: true,
-      breadcrumb: [
-        { label: 'Profile', routerLink: ['/profile'], icon: 'pi pi-user' },
-      ],
-    },
-    canActivate: [authGuard],
   },
   {
     path: 'notifications',
@@ -136,27 +128,6 @@ export const routes: Routes = [
     canActivate: [authGuard],
   },
   {
-    path: 'admin/tenants/:id',
-    component: AdminTenantDetailComponent,
-    data: {
-      breadcrumb: [
-        { label: 'Admin', routerLink: ['/admin'], icon: 'pi pi-cog' },
-        {
-          label: 'Tenants',
-          routerLink: ['/admin/tenants'],
-          icon: 'pi pi-building',
-        },
-        {
-          label: 'Tenant',
-          routerLink: ['/admin/tenants', ':id'],
-          icon: 'pi pi-building',
-          canReplace: true,
-        },
-      ],
-    },
-    canActivate: [authGuard],
-  },
-  {
     path: 'admin/users/:id',
     component: UserDetailComponent,
     data: {
@@ -171,7 +142,6 @@ export const routes: Routes = [
           label: 'User',
           routerLink: ['/admin/users', ':id'],
           icon: 'pi pi-user',
-          canReplace: true,
         },
       ],
     },
@@ -197,6 +167,52 @@ export const routes: Routes = [
           label: 'Tenants',
           routerLink: ['/admin/users', ':id', 'tenants'],
           icon: 'pi pi-sitemap',
+        },
+      ],
+    },
+    canActivate: [authGuard],
+  },
+  {
+    path: 'admin/tenants/:id',
+    component: AdminTenantDetailComponent,
+    data: {
+      breadcrumb: [
+        { label: 'Admin', routerLink: ['/admin'], icon: 'pi pi-cog' },
+        {
+          label: 'Tenants',
+          routerLink: ['/admin/tenants'],
+          icon: 'pi pi-building',
+        },
+        {
+          label: 'Tenant',
+          routerLink: ['/admin/tenants', ':id'],
+          icon: 'pi pi-building',
+          canReplace: true,
+        },
+      ],
+    },
+    canActivate: [authGuard],
+  },
+  {
+    path: 'admin/tenants/:id/users',
+    component: AdminTenantUsersListComponent,
+    data: {
+      breadcrumb: [
+        { label: 'Admin', routerLink: ['/admin'], icon: 'pi pi-cog' },
+        {
+          label: 'Tenants',
+          routerLink: ['/admin/tenants'],
+          icon: 'pi pi-building',
+        },
+        {
+          label: 'Tenant',
+          routerLink: ['/admin/tenants', ':id'],
+          icon: 'pi pi-building',
+        },
+        {
+          label: 'Users',
+          routerLink: ['/admin/tenants', ':id', 'users'],
+          icon: 'pi pi-users',
         },
       ],
     },

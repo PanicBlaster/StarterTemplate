@@ -4,7 +4,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, ILike } from 'typeorm';
+import { Repository, ILike, Not, In } from 'typeorm';
 import { User } from '../entities/user.entity';
 import { v4 as uuidv4 } from 'uuid';
 import * as bcrypt from 'bcrypt';
@@ -89,7 +89,30 @@ export class UserAccess {
     }
 
     if (options.tenantId) {
-      if (!options.all || !(await this.isUserAdmin(options.userId))) {
+      if (options.all && (await this.isUserAdmin(options.userId))) {
+        if (options.excludeMine) {
+          // Get users who are NOT in this tenant
+          // We need to use a raw query or join-based filtering
+          const tenantUsers = await this.userRepository
+            .createQueryBuilder('user')
+            .innerJoin('user.tenants', 'tenant')
+            .where('tenant.id = :tenantId', { tenantId: options.tenantId })
+            .getMany();
+
+          if (tenantUsers.length > 0) {
+            where = {
+              ...where,
+              id: Not(In(tenantUsers.map((u) => u.id))),
+            };
+          }
+        } else {
+          // Keep original behavior for non-exclude case
+          where = {
+            ...where,
+          };
+        }
+      } else {
+        // Keep original behavior for non-exclude case
         where = {
           ...where,
           tenants: { id: options.tenantId },

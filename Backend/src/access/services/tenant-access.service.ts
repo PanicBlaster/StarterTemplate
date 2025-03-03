@@ -71,19 +71,6 @@ export class TenantAccess {
     };
   }
 
-  async findByName(name: string): Promise<QueryResultItem<Tenant> | null> {
-    const tenant = await this.tenantRepository.findOne({
-      where: { name },
-    });
-
-    if (!tenant) return null;
-
-    return {
-      item: tenant,
-      id: tenant.id,
-    };
-  }
-
   async queryTenants(
     options: QueryOptionsDto
   ): Promise<QueryResult<TenantDto>> {
