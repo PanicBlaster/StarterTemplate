@@ -372,6 +372,90 @@ customToolbarItems: [
 ],
 ```
 
+## DTO Generation
+
+All DTOs should be in the DTO folder (src/app/dto). All services should be in the services folder. All components should be in the components folder. All pages should be in the pages folder.
+
+Services should use a DTO for the request and response. They query DTO should always use the QueryOptions DTO that already exists.
+
+QueryOptions DTO already exists and should not be modied.
+
+```
+export interface QueryOptions {
+  id?: string;
+  isNew?: boolean;
+  take?: number;
+  skip?: number;
+  where?: Record<string, any>;
+  order?: Record<string, any>;
+  tenantId?: string;
+  userId?: string;
+  all?: boolean;
+  excludeMine?: boolean;
+  filter?: string;
+}
+```
+
+DTOs should look like below
+
+```typescript
+export interface UserDto {
+  id: string;
+  username: string;
+  password: string;
+  email: string;
+  firstName: string;
+  lastName: string;
+  role: string;
+  createdAt: Date;
+  updatedAt: Date;
+}
+```
+
+## Service Generation
+
+Services should be generated in the services folder. Services should be generated like the following pattern
+
+Create, Update, and Delete should return an Observable<ProcessResult>. ProcessResult should have a message and a success property. ProcessResult should already exists in query.dto.ts.
+
+```
+@Injectable({
+  providedIn: 'root',
+})
+export class AccountService {
+  constructor(private backend: BackendService, private http: HttpClient) {}
+
+  updateAccount(id: string, user: UserDto): Observable<ProcessResult> {
+    return this.backend.put<ProcessResult>(`account/${id}`, user);
+  }
+
+  createAccount(user: UserDto): Observable<ProcessResult> {
+    user.createdAt = undefined;
+    user.updatedAt = undefined;
+    return this.backend.post<ProcessResult>('account', user);
+  }
+
+  deleteAccount(id: string): Observable<ProcessResult> {
+    return this.backend.delete<ProcessResult>(`account/${id}`);
+  }
+
+  getAccounts(queryParams: QueryOptions): Observable<QueryResult<UserDto>> {
+    return this.backend.getQuery<UserDto>('account', queryParams);
+  }
+
+  addUserToTenant(tenantId: string, userId: string): Observable<any> {
+    return this.backend.post(`account/tenant/add-user`, { tenantId, userId });
+  }
+}
+```
+
+## File Locations
+
+- DTOs: src/app/dto
+- Services: src/app/services
+- Components: src/app/components (only use for base components)
+- Pages: src/app/pages
+
 <p align="center">
   Powered by <a href="#">Panic Blaster</a> 🚀
 </p>
