@@ -114,3 +114,15 @@ export class MSSignInDto {
   @IsNotEmpty()
   code: string;
 }
+
+export class SignInWithCodeDto {
+  @ApiProperty({ description: 'Authorization code from Cognito OAuth flow' })
+  @IsString()
+  @IsNotEmpty()
+  code: string;
+
+  @ApiProperty({ description: 'Redirect URI used in the OAuth flow' })
+  @IsString()
+  @IsNotEmpty()
+  redirectUri: string;
+}

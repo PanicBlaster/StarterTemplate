@@ -6,6 +6,7 @@ import { ManagerModule } from './manager/manager.module';
 import { Client } from 'pg';
 import { APP_INTERCEPTOR } from '@nestjs/core';
 import { VersionInterceptor } from './common/interceptors/version.interceptor';
+import { HttpModule } from '@nestjs/axios';
 
 const ENV = process.env.NODE_ENV;
 console.log('ENV', ENV);
@@ -37,7 +38,12 @@ async function testConnection() {
 }
 
 @Module({
-  imports: [TypeOrmModule.forRoot(databaseConfig), AccessModule, ManagerModule],
+  imports: [
+    TypeOrmModule.forRoot(databaseConfig),
+    AccessModule,
+    ManagerModule,
+    HttpModule,
+  ],
   providers: [
     {
       provide: APP_INTERCEPTOR,
