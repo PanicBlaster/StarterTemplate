@@ -56,8 +56,16 @@ export class UserAccess {
   async findOneUser(
     options: QueryOptionsDto
   ): Promise<QueryResultItem<UserDto> | null> {
+
+    let where = options.where || {};
+    if (options.id) {
+      where = {
+        ...where,
+        id: options.id,
+      };
+
     const user = await this.userRepository.findOne({
-      where: { id: options.id },
+      where: where,
       relations: ['tenants'],
     });
 

@@ -8,7 +8,7 @@ import { TenantAccessService } from '../../../services/tenant-access.service';
   selector: 'app-admin-tenant-list',
   standalone: true,
   imports: [CommonModule, ItemListComponent],
-  template: `<app-item-list [config]="listConfig"></app-item-list>`,
+  template: `<pb-item-list [config]="listConfig"></pb-item-list>`,
 })
 export class AdminTenantListComponent {
   listConfig: ItemListConfig = {

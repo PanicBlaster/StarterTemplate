@@ -32,6 +32,10 @@ export class AuthService {
   private msRedirectUri = `${window.location.origin}/authmicrosoft`;
   private msAuthEndpoint = `https://login.microsoftonline.com/${environment.microsoftTenantId}/oauth2/v2.0/authorize`;
 
+  // Add Cognito OAuth configuration
+  private cognitoRedirectUri = `${window.location.origin}/authcognito`;
+  private cognitoAuthEndpoint = `https://${environment.cognitoDomain}/oauth2/authorize`;
+
   constructor(private http: HttpClient, private router: Router) {
     // Initialize authentication state
     this.isAuthenticatedSubject.next(this.hasValidToken());
@@ -184,6 +188,32 @@ export class AuthService {
   loginWithMicrosoftCode(code: string): Observable<AuthResponse> {
     return this.http
       .post<AuthResponse>(`${this.baseUrl}/auth/signinWithMs`, { code })
+      .pipe(
+        tap((response) => {
+          this.setSession(response);
+          this.isAuthenticatedSubject.next(true);
+        })
+      );
+  }
+
+  redirectToCognitoLogin() {
+    const url = `https://${environment.cognitoDomain}/login?client_id=${
+      environment.cognitoClientId
+    }&response_type=code&scope=${environment.cognitoScope.join(
+      '+'
+    )}&redirect_uri=${encodeURIComponent(environment.cognitoRedirectUri)}`;
+
+    window.location.href = url;
+  }
+
+  loginWithCognitoCode(code: string): Observable<AuthResponse> {
+    const redirectUri = window.location.href;
+
+    return this.http
+      .post<AuthResponse>(`${this.baseUrl}/auth/signin-with-cognito`, {
+        code,
+        redirectUri: environment.cognitoRedirectUri,
+      })
       .pipe(
         tap((response) => {
           this.setSession(response);

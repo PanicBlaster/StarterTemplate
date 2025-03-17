@@ -12,7 +12,7 @@ import { ToastModule } from 'primeng/toast';
   standalone: true,
   imports: [CommonModule, ItemDetailComponent, ToastModule],
   providers: [MessageService],
-  template: `<app-item-detail [config]="detailConfig"></app-item-detail>`,
+  template: `<pb-item-detail [config]="detailConfig"></pb-item-detail>`,
 })
 export class AdminTenantDetailComponent {
   detailConfig: ItemDetailConfig = {

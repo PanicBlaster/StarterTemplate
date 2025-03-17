@@ -6,7 +6,7 @@ import { AuthService } from '../../services/auth.service';
 import { Profile } from '../../dto/auth.dto';
 import { MessageService } from 'primeng/api';
 import { ToastModule } from 'primeng/toast';
-import { QueryOptions } from '../../dto/query.dto';
+import { QueryOptions } from '../../components/common-dto/query.dto';
 import { AccountService } from '../../services/account.service';
 import { UserDto } from '../../dto/user.dto';
 import { Params } from '@angular/router';
@@ -17,7 +17,7 @@ import { Params } from '@angular/router';
   imports: [CommonModule, ItemDetailComponent, ToastModule],
   providers: [MessageService],
   template: `
-    <app-item-detail [config]="detailConfig"></app-item-detail>
+    <pb-item-detail [config]="detailConfig"></pb-item-detail>
     <p-toast></p-toast>
   `,
 })

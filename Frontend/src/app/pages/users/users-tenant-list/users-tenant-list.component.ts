@@ -30,7 +30,7 @@ import { DialogModule } from 'primeng/dialog'; // Add this
     ConfirmationService,
   ],
   template: `
-    <app-item-list #list [config]="listConfig"></app-item-list>
+    <pb-item-list #list [config]="listConfig"></pb-item-list>
     <app-select-dialog
       #selectDialog
       [config]="selectDialogConfig"
@@ -83,15 +83,6 @@ export class UsersTenantListComponent implements OnInit {
       },
       deleteItem: (params, item) =>
         this.tenantAccessService.removeTenantAccess(item.id, this.userId),
-      updateHeader: async (params, items) => {
-        const user = await firstValueFrom(
-          this.accountService.getAccount(this.userId)
-        );
-        if (!user) {
-          return '';
-        }
-        return `User Tenants (${user.username})`;
-      },
     },
   };
 
@@ -120,7 +111,11 @@ export class UsersTenantListComponent implements OnInit {
           );
         });
         Promise.all(requests).then(() => {
-          this.list.refresh();
+          this.list.loadData({
+            skip: 0,
+            take: 10,
+            userId: this.userId,
+          });
         });
       },
     },

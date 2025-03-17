@@ -5,20 +5,23 @@ import { InputTextModule } from 'primeng/inputtext';
 import { InputNumberModule } from 'primeng/inputnumber';
 import { CalendarModule } from 'primeng/calendar';
 import { DropdownModule } from 'primeng/dropdown';
+import { CheckboxModule } from 'primeng/checkbox';
+import { TextareaModule } from 'primeng/textarea';
+import { TableModule } from 'primeng/table'; // Import TableModule for grid
+import { ButtonModule } from 'primeng/button'; // Import ButtonModule for grid actions
 import { PageToolbarComponent } from '../page-toolbar/page-toolbar.component';
 import { ItemDetailConfig, FormField } from './item-detail.types';
 import { ToolbarAction } from '../page-toolbar/page-toolbar.types';
 import { FluidModule } from 'primeng/fluid';
-import { MessageService } from 'primeng/api';
+import { MessageService, ConfirmationService } from 'primeng/api';
 import { ToastModule } from 'primeng/toast';
+import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { ActivatedRoute, Router } from '@angular/router';
-import { QueryOptions } from '../../dto/query.dto';
+import { QueryOptions, QueryResult } from '../common-dto/query.dto';
 import { BreadcrumbService } from '../../services/breadcrumb.service';
 
-declare const location: any;
-
 @Component({
-  selector: 'app-item-detail',
+  selector: 'pb-item-detail', // Changed from pb-item-detail
   standalone: true,
   imports: [
     CommonModule,
@@ -27,16 +30,22 @@ declare const location: any;
     InputNumberModule,
     CalendarModule,
     DropdownModule,
+    CheckboxModule,
+    TextareaModule,
+    TableModule, // Add TableModule
+    ButtonModule, // Add ButtonModule
     PageToolbarComponent,
     FluidModule,
     ToastModule,
+    ConfirmDialogModule,
   ],
-  providers: [MessageService],
+  providers: [MessageService, ConfirmationService],
   template: `
-    <app-page-toolbar
+    <pb-page-toolbar
       [header]="config.header"
       [supportsEdit]="config.isEditable"
       [supportsAdd]="config.supportsAdd"
+      [supportsDelete]="config.supportsDelete"
       [isEditing]="isEditing"
       [actions]="config.customToolbarItems || []"
       [metrics]="config.metrics"
@@ -44,8 +53,9 @@ declare const location: any;
       (onSave)="saveChanges()"
       (onCancel)="cancelEdit()"
       (onAdd)="createNew()"
+      (onDelete)="confirmDelete()"
       (onMockData)="handleMockData()"
-    ></app-page-toolbar>
+    ></pb-page-toolbar>
 
     <p-fluid>
       <div class="grid">
@@ -74,6 +84,22 @@ declare const location: any;
             [readonly]="!isEditing"
             [required]="field.required || false"
           />
+
+          <!-- Textarea Input -->
+          <textarea
+            *ngIf="
+              field.type === 'textarea' &&
+              (!field.newOnly || this.query.isNew || field.newOnly == undefined)
+            "
+            [id]="field.key"
+            pTextarea
+            [(ngModel)]="editingItem[field.key]"
+            [readonly]="!isEditing"
+            [required]="field.required || false"
+            [rows]="5"
+            [autoResize]="true"
+            style="width: 100%"
+          ></textarea>
 
           <!-- Password Input -->
           <input
@@ -126,9 +152,111 @@ declare const location: any;
             optionLabel="label"
             optionValue="value"
           ></p-dropdown>
+
+          <!-- Checkbox Input -->
+          <div
+            *ngIf="
+              field.type === 'checkbox' &&
+              (!field.newOnly || this.query.isNew || field.newOnly == undefined)
+            "
+            class="field-checkbox"
+          >
+            <p-checkbox
+              [id]="field.key"
+              [(ngModel)]="editingItem[field.key]"
+              [binary]="true"
+              [disabled]="!isEditing"
+            ></p-checkbox>
+          </div>
         </div>
       </div>
     </p-fluid>
+
+    <!-- Grid/Table Section - Only show if gridColumns are defined -->
+    <div
+      *ngIf="config.gridColumns && config.gridColumns.length > 0"
+      class="grid-section mt-4"
+    >
+      <h3 *ngIf="config.gridHeader">{{ config.gridHeader }}</h3>
+
+      <p-table
+        [value]="gridItems"
+        [paginator]="false"
+        [rows]="100"
+        [rowsPerPageOptions]="[5, 10, 25, 50]"
+        [loading]="gridLoading"
+        styleClass="p-datatable-sm"
+      >
+        <ng-template pTemplate="header">
+          <tr>
+            <th *ngFor="let col of config.gridColumns">
+              {{ col.header }}
+            </th>
+            <th *ngIf="config.gridRowSelect || config.gridRowDelete">
+              Actions
+            </th>
+          </tr>
+        </ng-template>
+        <ng-template pTemplate="body" let-rowData>
+          <tr>
+            <td *ngFor="let col of config.gridColumns">
+              <!-- Format cell based on column type -->
+              <ng-container [ngSwitch]="col.type">
+                <span *ngSwitchCase="'date'">{{
+                  rowData[col.field] | date : col.format || 'short'
+                }}</span>
+                <span *ngSwitchCase="'boolean'">{{
+                  rowData[col.field] ? 'Yes' : 'No'
+                }}</span>
+                <span *ngSwitchDefault>{{ rowData[col.field] }}</span>
+              </ng-container>
+            </td>
+            <td *ngIf="config.gridRowSelect || config.gridRowDelete">
+              <div class="flex justify-content-end">
+                <button
+                  *ngIf="config.gridRowSelect"
+                  pButton
+                  icon="pi pi-pencil"
+                  class="p-button-rounded p-button-text"
+                  (click)="onGridRowSelect(rowData)"
+                ></button>
+                <button
+                  *ngIf="config.gridRowDelete"
+                  pButton
+                  icon="pi pi-trash"
+                  class="p-button-rounded p-button-text p-button-danger"
+                  (click)="onGridRowDelete(rowData)"
+                ></button>
+              </div>
+            </td>
+          </tr>
+        </ng-template>
+        <ng-template pTemplate="emptymessage">
+          <tr>
+            <td
+              [attr.colspan]="
+                config.gridColumns.length +
+                (config.gridRowSelect || config.gridRowDelete ? 1 : 0)
+              "
+            >
+              No records found
+            </td>
+          </tr>
+        </ng-template>
+      </p-table>
+    </div>
+
+    <!-- Add the confirmation dialog -->
+    <p-confirmDialog
+      header="Confirmation"
+      icon="pi pi-exclamation-triangle"
+      message="Are you sure you want to delete this item? This action cannot be undone."
+      [style]="{ width: '450px' }"
+      acceptButtonStyleClass="p-button-danger"
+      rejectButtonStyleClass="p-button-text"
+    >
+    </p-confirmDialog>
+
     <p-toast></p-toast>
   `,
   styles: [
@@ -139,6 +267,16 @@ declare const location: any;
       label {
         display: block;
         margin-bottom: 0.5rem;
+      }
+      .field-checkbox {
+        margin-top: 0.5rem;
+      }
+      .grid-section {
+        margin-top: 2rem;
+        margin-bottom: 1rem;
+      }
+      .mt-4 {
+        margin-top: 1.5rem;
       }
     `,
   ],
@@ -155,8 +293,14 @@ export class ItemDetailComponent implements OnInit {
   isEditing: boolean = false;
   editingItem: any = {};
 
+  // Grid related properties
+  gridItems: any[] = [];
+  gridLoading: boolean = false;
+  gridTotalRecords: number = 0;
+
   constructor(
     private messageService: MessageService,
+    private confirmationService: ConfirmationService,
     private route: ActivatedRoute,
     private router: Router,
     private breadcrumbService: BreadcrumbService
@@ -202,7 +346,67 @@ export class ItemDetailComponent implements OnInit {
           this.item[this.config.breadcrumbField]
         );
       }
+
+      // Reload grid items whenever the main item changes (and it's not a new item)
+      if (
+        this.config.gridColumns &&
+        this.config.gridColumns.length > 0 &&
+        this.config.dataService.loadGridItems &&
+        !this.query.isNew
+      ) {
+        this.loadGridItems();
+      }
+
+      if (this.config.dataService.updateMetrics) {
+        this.config.metrics = this.config.dataService.updateMetrics(
+          this.query,
+          this.item
+        );
+      } else {
+        if (this.item.metrics) {
+          this.config.metrics = this.item.metrics;
+        }
+      }
     });
+  }
+
+  loadGridItems() {
+    if (!this.config.dataService.loadGridItems) return;
+
+    this.gridLoading = true;
+    this.config.dataService.loadGridItems(this.query).subscribe({
+      next: (result: QueryResult<any>) => {
+        this.gridItems = result.items.map((item) => ({
+          ...item,
+          ...item.item,
+        }));
+        this.gridTotalRecords = result.total;
+        this.gridLoading = false;
+      },
+      error: (error) => {
+        console.error('Error loading grid items:', error);
+        this.gridLoading = false;
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Error',
+          detail: 'Failed to load grid items',
+        });
+      },
+    });
+  }
+
+  onGridRowSelect(rowData: any) {
+    if (this.config.gridRowSelect) {
+      this.config.gridRowSelect(rowData);
+    }
+  }
+
+  onGridRowDelete(rowData: any) {
+    if (this.config.gridRowDelete) {
+      this.config.gridRowDelete(rowData);
+      // Optionally reload grid items after delete
+      this.loadGridItems();
+    }
   }
 
   handleMockData() {
@@ -323,5 +527,40 @@ export class ItemDetailComponent implements OnInit {
 
   getRandomNumber() {
     return Math.floor(Math.random() * 100);
+  }
+
+  // Confirmation before delete
+  confirmDelete() {
+    if (!this.config.supportsDelete) return;
+
+    this.confirmationService.confirm({
+      accept: () => {
+        this.deleteItem();
+      },
+    });
+  }
+
+  private deleteItem() {
+    this.config.dataService.deleteItem(this.query).subscribe({
+      next: () => {
+        this.messageService.add({
+          severity: 'success',
+          summary: 'Success',
+          detail: 'Item deleted successfully',
+        });
+        this.onDelete.emit();
+
+        // Navigate back to the list view
+        this.router.navigate(['../'], { relativeTo: this.route });
+      },
+      error: (error) => {
+        console.error('Error deleting item:', error);
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Error',
+          detail: 'Failed to delete item',
+        });
+      },
+    });
   }
 }

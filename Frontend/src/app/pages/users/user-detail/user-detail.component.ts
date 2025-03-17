@@ -13,7 +13,7 @@ import { ThemeUtils } from '@primeng/themes';
   standalone: true,
   imports: [CommonModule, ItemDetailComponent, ToastModule],
   providers: [MessageService],
-  template: `<app-item-detail [config]="detailConfig"></app-item-detail>`,
+  template: `<pb-item-detail [config]="detailConfig"></pb-item-detail>`,
 })
 export class UserDetailComponent {
   detailConfig: ItemDetailConfig = {

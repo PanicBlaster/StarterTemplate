@@ -22,7 +22,7 @@ import { ToastModule } from 'primeng/toast';
   ],
   providers: [MessageService],
   template: `
-    <app-item-list #list [config]="listConfig"></app-item-list>
+    <pb-item-list #list [config]="listConfig"></pb-item-list>
     <app-select-dialog
       #selectDialog
       [config]="selectDialogConfig"
@@ -42,7 +42,6 @@ export class AdminTenantUsersListComponent implements OnInit {
     supportsEdit: false,
     supportsDelete: true,
     enableSearch: true,
-    searchPlaceholder: 'Search users...',
     customToolbarItems: [
       {
         label: 'Add Users',
@@ -97,20 +96,6 @@ export class AdminTenantUsersListComponent implements OnInit {
       loadItems: (params) => this.accountService.getAccounts(params),
       deleteItem: (params, item) =>
         this.tenantAccessService.removeTenantAccess(this.tenantId, item.id),
-      updateHeader: async (params, items) => {
-        try {
-          if (!this.tenantName && this.tenantId) {
-            const tenant = await firstValueFrom(
-              this.tenantAccessService.getTenant(this.tenantId)
-            );
-            this.tenantName = tenant.name;
-          }
-          return `Users in ${this.tenantName} Tenant`;
-        } catch (error) {
-          console.error('Error loading tenant details:', error);
-          return 'Tenant Users';
-        }
-      },
     },
   };
 
@@ -161,7 +146,11 @@ export class AdminTenantUsersListComponent implements OnInit {
             summary: 'Success',
             detail: `${items.length} users added to tenant`,
           });
-          this.list.refresh();
+          this.list.loadData({
+            skip: 0,
+            take: 10,
+            tenantId: this.tenantId,
+          });
         } catch (error) {
           this.messageService.add({
             severity: 'error',

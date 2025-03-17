@@ -15,8 +15,6 @@ export interface QueryOptions {
   isNew?: boolean;
   take?: number;
   skip?: number;
-  where?: Record<string, any>;
-  order?: Record<string, any>;
   tenantId?: string;
   userId?: string;
   all?: boolean;

@@ -2,7 +2,11 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, of } from 'rxjs';
 import { environment } from '../../environments/environment';
-import { ProcessResult, QueryOptions, QueryResult } from '../dto/query.dto';
+import {
+  ProcessResult,
+  QueryOptions,
+  QueryResult,
+} from '../components/common-dto/query.dto';
 import { TenantInfo } from '../dto/auth.dto';
 import { BackendService } from './backend.service';
 import { TenantDto, CreateTenantDto } from '../dto/tenant.dto';
@@ -14,47 +18,7 @@ export class TenantAccessService {
   constructor(private backend: BackendService, private http: HttpClient) {}
 
   getTenants(params: QueryOptions): Observable<QueryResult<TenantDto>> {
-    const queryParams: any = {
-      skip: params.skip || 0,
-      take: params.take || 10,
-    };
-
-    if (params.userId) {
-      queryParams.user = params.userId;
-    }
-
-    let userParams = '';
-    if (params.userId) {
-      userParams = `&user=${params.userId}`;
-    }
-    let allParams = '';
-    if (params.all) {
-      allParams = `&all=${params.all}`;
-    }
-
-    let filterParams = '';
-    if (params.filter) {
-      filterParams = `&filter=${params.filter}`;
-    }
-
-    let excludeMine = '';
-    if (params.excludeMine) {
-      excludeMine = `&excludeMine=${params.excludeMine}`;
-    }
-
-    let orderParams = '';
-    if (params.order !== undefined) {
-      const order = params.order;
-      Object.keys(params.order).forEach((key) => {
-        var ascDesc = order[key] === 1 ? 'ASC' : 'DESC';
-        orderParams = `{"${key}": "${ascDesc}"}`;
-      });
-      orderParams = `&order=${orderParams}`;
-    }
-
-    return this.backend.get<QueryResult<TenantDto>>(
-      `tenant?take=${params.take}&skip=${params.skip}${userParams}${allParams}${filterParams}${excludeMine}${orderParams}`
-    );
+    return this.backend.getQuery<TenantDto>('tenant', params);
   }
 
   addTenantAccess(tenantId: string, userId: string): Observable<any> {

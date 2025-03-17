@@ -8,7 +8,7 @@ import { AccountService } from '../../../services/account.service';
   selector: 'app-admin-user-list',
   standalone: true,
   imports: [CommonModule, ItemListComponent],
-  template: `<app-item-list [config]="listConfig"></app-item-list>`,
+  template: `<pb-item-list [config]="listConfig"></pb-item-list>`,
 })
 export class AdminUserListComponent {
   listConfig: ItemListConfig = {

@@ -1,4 +1,10 @@
-import { Component, Input, OnInit, HostListener } from '@angular/core';
+import {
+  Component,
+  Input,
+  OnInit,
+  OnDestroy,
+  HostListener,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { TableModule } from 'primeng/table';
 import { ButtonModule } from 'primeng/button';
@@ -9,14 +15,16 @@ import { MessageService } from 'primeng/api';
 import { ToastModule } from 'primeng/toast';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { ConfirmationService } from 'primeng/api';
-import { QueryOptions } from '../../dto/query.dto';
+import { QueryOptions } from '../common-dto/query.dto';
 import { IdDisplayPipe } from '../../pipes/id-display.pipe';
 import { InputTextModule } from 'primeng/inputtext';
 import { FormsModule } from '@angular/forms';
 import { ShortDatePipe } from '../../pipes/short-date.pipe';
+import { Subject, Subscription } from 'rxjs';
+import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
 
 @Component({
-  selector: 'app-item-list',
+  selector: 'pb-item-list', // Changed from pb-item-list
   standalone: true,
   imports: [
     CommonModule,
@@ -32,7 +40,7 @@ import { ShortDatePipe } from '../../pipes/short-date.pipe';
   ],
   providers: [MessageService, ConfirmationService],
   template: `
-    <app-page-toolbar
+    <pb-page-toolbar
       [header]="header"
       [supportsAdd]="config.supportsAdd || false"
       [supportsEdit]="false"
@@ -40,7 +48,7 @@ import { ShortDatePipe } from '../../pipes/short-date.pipe';
       [actions]="getAllToolbarItems()"
       [metrics]="config.metrics"
       (onAdd)="handleAdd()"
-    ></app-page-toolbar>
+    ></pb-page-toolbar>
 
     <div *ngIf="config.enableSearch" class="search-container mb-3">
       <span class="p-input-icon-right full-width">
@@ -49,7 +57,7 @@ import { ShortDatePipe } from '../../pipes/short-date.pipe';
           pInputText
           [(ngModel)]="filterValue"
           (ngModelChange)="onFilterChange($event)"
-          [placeholder]="config.searchPlaceholder || 'Search...'"
+          [placeholder]="'Search...'"
           class="auto-width"
         />
       </span>
@@ -139,7 +147,7 @@ import { ShortDatePipe } from '../../pipes/short-date.pipe';
     `,
   ],
 })
-export class ItemListComponent implements OnInit {
+export class ItemListComponent implements OnInit, OnDestroy {
   @Input() config!: ItemListConfig;
 
   header: string = '';
@@ -152,6 +160,10 @@ export class ItemListComponent implements OnInit {
   queryParams: QueryOptions = {};
   filterValue: string = '';
   isMobile: boolean = false;
+
+  // Add a subject for debouncing filter changes
+  private filterSubject = new Subject<string>();
+  private filterSubscription?: Subscription;
 
   @HostListener('window:resize', ['$event'])
   onResize(event?: any) {
@@ -167,6 +179,27 @@ export class ItemListComponent implements OnInit {
 
   ngOnInit() {
     this.checkScreenSize();
+
+    // Set up debounced filter handling
+    this.filterSubscription = this.filterSubject
+      .pipe(
+        debounceTime(500), // Wait 500ms after the last event before emitting
+        distinctUntilChanged() // Only emit if value changed
+      )
+      .subscribe((filterValue) => {
+        this.loadData({
+          first: 0,
+          rows: 10,
+          filter: filterValue,
+        });
+      });
+  }
+
+  ngOnDestroy() {
+    // Clean up subscriptions
+    if (this.filterSubscription) {
+      this.filterSubscription.unsubscribe();
+    }
   }
 
   checkScreenSize() {
@@ -175,14 +208,6 @@ export class ItemListComponent implements OnInit {
 
   getAllToolbarItems() {
     return [...(this.config.customToolbarItems || [])];
-  }
-
-  refresh() {
-    this.filterValue = '';
-    this.loadData({
-      skip: 0,
-      take: 10,
-    });
   }
 
   loadData(event: any) {
@@ -215,11 +240,11 @@ export class ItemListComponent implements OnInit {
         this.loading = false;
 
         if (this.config.dataService.updateHeader) {
-          this.config.dataService
-            .updateHeader(params, this.items)
-            .then((header) => {
-              this.header = header;
-            });
+          this.header = this.config.dataService.updateHeader(
+            params,
+            this.items,
+            result.total
+          );
         }
       },
       error: (error) => {
@@ -285,11 +310,8 @@ export class ItemListComponent implements OnInit {
     return columns;
   }
 
+  // Update onFilterChange to use the subject
   onFilterChange(event: any) {
-    this.loadData({
-      first: 0,
-      rows: 10,
-      filter: event,
-    });
+    this.filterSubject.next(event);
   }
 }

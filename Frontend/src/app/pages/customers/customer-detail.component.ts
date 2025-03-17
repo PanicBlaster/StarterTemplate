@@ -1,12 +1,12 @@
 @Component({
   template: `
-    <app-item-detail
+    <pb-item-detail
       [config]="detailConfig"
       [item]="customer"
       (onCreate)="handleCreate($event)"
       (onUpdate)="handleUpdate($event)"
       (onDelete)="handleDelete()"
-    ></app-item-detail>
+    ></pb-item-detail>
   `,
 })
 export class CustomerDetailComponent {

@@ -24,6 +24,7 @@ import { firstValueFrom } from 'rxjs/internal/firstValueFrom';
 import { HttpService } from '@nestjs/axios';
 import { TenantAccess } from '../access/services/tenant-access.service';
 import { UserCreateDto } from 'src/common/dto/user.dto';
+import { sign } from 'crypto';
 
 @ApiTags('auth')
 @Controller('api/v1/auth')
@@ -164,50 +165,27 @@ export class AuthController {
     @Body() signInDto: SignInWithCodeDto
   ): Promise<AuthResponse> {
     try {
-      // Exchange authorization code for tokens
-      const tokenEndpoint =
-        process.env.COGNITO_TOKEN_ENDPOINT ||
-        'https://your-cognito-domain.auth.region.amazoncognito.com/oauth2/token';
-      const tokenResponse = await firstValueFrom(
-        this.httpService.post(
-          tokenEndpoint,
-          new URLSearchParams({
-            grant_type: 'authorization_code',
-            client_id: process.env.COGNITO_CLIENT_ID,
-            client_secret: process.env.COGNITO_CLIENT_SECRET,
-            code: signInDto.code,
-            redirect_uri: signInDto.redirectUri,
-          }).toString(),
-          {
-            headers: {
-              'Content-Type': 'application/x-www-form-urlencoded',
-            },
-          }
-        )
+      const tokenResponse = await this.exchangeCodeForTokens(
+        signInDto.code,
+        signInDto.redirectUri
       );
-
-      const { access_token, id_token } = tokenResponse.data;
 
       // Get user information using the access token
-      const userInfoEndpoint =
-        process.env.COGNITO_USER_INFO_ENDPOINT ||
-        'https://your-cognito-domain.auth.region.amazoncognito.com/oauth2/userInfo';
-      const userInfoResponse = await firstValueFrom(
-        this.httpService.get(userInfoEndpoint, {
-          headers: {
-            Authorization: `Bearer ${access_token}`,
-          },
-        })
+      const userInfoResponse = await this.getUserInfo(
+        tokenResponse.access_token
       );
 
-      const userInfo = userInfoResponse.data;
-
-      const userId = this.createOrFindUser(userInfo.email, '', '', 'Cognito');
+      const userId = await this.createOrFindUser(
+        userInfoResponse.email,
+        '',
+        '',
+        'Cognito'
+      );
 
       // Check if user exists in our system and authenticate them
       // Assuming email is the username in our system
       const authResponse = await this.userAccess.authForExternal(
-        userInfo.email
+        userInfoResponse.email
       );
 
       return authResponse;
@@ -221,6 +199,46 @@ export class AuthController {
         HttpStatus.UNAUTHORIZED
       );
     }
+  }
+
+  private async exchangeCodeForTokens(
+    code: string,
+    redirectUri?: string
+  ): Promise<any> {
+    const params = new URLSearchParams();
+    params.append('grant_type', 'authorization_code');
+    params.append('client_id', process.env.COGNITO_CLIENT_ID);
+    params.append('code', code);
+
+    if (redirectUri) {
+      params.append('redirect_uri', redirectUri);
+    }
+
+    if (process.env.COGNITO_CLIENT_SECRET) {
+      params.append('client_secret', process.env.COGNITO_CLIENT_SECRET);
+    }
+
+    const response = await firstValueFrom(
+      this.httpService.post(process.env.COGNITO_TOKEN_ENDPOINT, params, {
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+        },
+      })
+    );
+
+    return response.data;
+  }
+
+  private async getUserInfo(accessToken: string): Promise<any> {
+    const response = await firstValueFrom(
+      this.httpService.get(process.env.COGNITO_USER_INFO_ENDPOINT, {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      })
+    );
+
+    return response.data;
   }
 
   @Get('test')
@@ -274,6 +292,8 @@ export class AuthController {
         role: 'user',
         tenantId: tenantId,
       });
+    } else {
+      userId = user.id;
     }
 
     return userId;

@@ -13,7 +13,7 @@ import { of } from 'rxjs';
   standalone: true,
   imports: [CommonModule, ToastModule, ItemDetailComponent],
   providers: [MessageService],
-  template: `<app-item-detail [config]="detailConfig"></app-item-detail>`,
+  template: `<pb-item-detail [config]="detailConfig"></pb-item-detail>`,
 })
 export class ProfileComponent {
   userId: string = '';

@@ -4,7 +4,11 @@ import { Observable, of } from 'rxjs';
 import { environment } from '../../environments/environment';
 import { BackendService } from './backend.service';
 import { UserDto } from '../dto/user.dto';
-import { ProcessResult, QueryOptions, QueryResult } from '../dto/query.dto';
+import {
+  ProcessResult,
+  QueryOptions,
+  QueryResult,
+} from '../components/common-dto/query.dto';
 
 @Injectable({
   providedIn: 'root',

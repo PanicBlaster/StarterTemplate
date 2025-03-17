@@ -1,7 +1,12 @@
 import { Observable } from 'rxjs';
 import { ToolbarAction, Metric } from '../page-toolbar/page-toolbar.types';
-import { ProcessResult, QueryOptions } from '../../dto/query.dto';
+import {
+  ProcessResult,
+  QueryOptions,
+  QueryResult,
+} from '../common-dto/query.dto';
 import { Params } from '@angular/router';
+import { ColumnDefinition } from '../item-list/item-list.types';
 
 export type FormFieldType =
   | 'text'
@@ -10,7 +15,9 @@ export type FormFieldType =
   | 'select'
   | 'password'
   | 'email'
-  | 'editor';
+  | 'editor'
+  | 'checkbox'
+  | 'textarea';
 
 export interface SelectOption {
   label: string;
@@ -33,6 +40,9 @@ export interface ItemDetailDataService<T> {
   createItem(query: QueryOptions, item: any): Observable<ProcessResult>;
   updateItem(query: QueryOptions, item: any): Observable<ProcessResult>;
   deleteItem(query: QueryOptions): Observable<ProcessResult>;
+  updateMetrics?(params: QueryOptions, items: any): Metric[];
+
+  loadGridItems?(params: QueryOptions): Observable<QueryResult<any>>; // New method for loading grid items
 }
 
 export interface ItemDetailConfig {
@@ -46,6 +56,12 @@ export interface ItemDetailConfig {
   formLayout: FormField[];
   dataService: ItemDetailDataService<any>;
   updateSuccessMessage: string;
+
+  // New grid/table related properties
+  gridColumns?: ColumnDefinition[];
+  gridHeader?: string;
+  gridRowSelect?: (item: any) => void;
+  gridRowDelete?: (item: any) => void;
 }
 
 export type DisplayMode = 'desktop' | 'mobile';

@@ -67,6 +67,12 @@ import { Router } from '@angular/router';
               [loading]="loading"
               styleClass="w-full"
             ></p-button>
+            <p-button
+              label="Sign In with Cognito"
+              (onClick)="loginWithCognito()"
+              [loading]="loading"
+              styleClass="w-full"
+            ></p-button>
           </div>
 
           <!-- Signup Form -->
@@ -147,7 +153,7 @@ import { Router } from '@angular/router';
       </div>
     </div>
   `,
-  styleUrl: './auth.component.scss',
+  styles: [],
 })
 export class AuthComponent {
   isSignup = false;
@@ -256,5 +262,9 @@ export class AuthComponent {
 
   loginWithMicrosoft() {
     this.authService.redirectToMicrosoftLogin();
+  }
+
+  loginWithCognito() {
+    this.authService.redirectToCognitoLogin();
   }
 }

@@ -1,14 +1,24 @@
-import { Component, Input, Output, EventEmitter } from '@angular/core';
+import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { RouterModule } from '@angular/router';
 import { ButtonModule } from 'primeng/button';
 import { ToolbarModule } from 'primeng/toolbar';
+import { TooltipModule } from 'primeng/tooltip';
 import { ToolbarAction, Metric } from './page-toolbar.types';
 import { FluidModule } from 'primeng/fluid';
 import { environment } from '../../../environments/environment';
+
 @Component({
-  selector: 'app-page-toolbar',
+  selector: 'pb-page-toolbar', // Changed from app-page-toolbar
   standalone: true,
-  imports: [CommonModule, ButtonModule, ToolbarModule, FluidModule],
+  imports: [
+    CommonModule,
+    RouterModule,
+    ButtonModule,
+    ToolbarModule,
+    TooltipModule,
+    FluidModule,
+  ],
   template: `
     <div class="page-toolbar">
       <p-toolbar class="header-row">
@@ -24,6 +34,15 @@ import { environment } from '../../../environments/environment';
             (onClick)="onAddClick()"
             [label]="isDesktop ? 'Add' : undefined"
             styleClass="p-button-primary mr-2"
+          ></p-button>
+
+          <!-- Delete button - only show if supported and not in edit mode -->
+          <p-button
+            *ngIf="supportsDelete && !isEditing"
+            icon="pi pi-trash"
+            (onClick)="onDeleteClick()"
+            [label]="isDesktop ? 'Delete' : undefined"
+            styleClass="p-button-danger mr-2"
           ></p-button>
 
           <!-- Custom actions - hide in edit mode -->
@@ -169,12 +188,14 @@ export class PageToolbarComponent {
   @Input() metrics?: Metric[];
   @Input() supportsEdit: boolean = false;
   @Input() supportsAdd: boolean = false;
+  @Input() supportsDelete: boolean = false;
   @Input() isEditing: boolean = false;
   @Input() canMockData: boolean = false;
   @Output() onEdit: EventEmitter<void> = new EventEmitter<void>();
   @Output() onSave: EventEmitter<void> = new EventEmitter<void>();
   @Output() onCancel: EventEmitter<void> = new EventEmitter<void>();
   @Output() onAdd: EventEmitter<void> = new EventEmitter<void>();
+  @Output() onDelete: EventEmitter<void> = new EventEmitter<void>();
   @Output() onMockData: EventEmitter<void> = new EventEmitter<void>();
   isDesktop: boolean = window.innerWidth > 768;
 
@@ -212,5 +233,9 @@ export class PageToolbarComponent {
   onMockDataClick() {
     console.log('Mock data toolbar');
     this.onMockData.emit();
+  }
+
+  onDeleteClick() {
+    this.onDelete.emit();
   }
 }

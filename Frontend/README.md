@@ -217,7 +217,7 @@ List pages should be generated like the user list page. List pages should use th
   selector: 'app-user-list',
   standalone: true,
   imports: [ItemListComponent],
-  template: `<app-item-list [config]="listConfig"></app-item-list>`,
+  template: `<pb-item-list [config]="listConfig"></pb-item-list>`,
 })
 export class UserListComponent {
   listConfig: ItemListConfig = {
@@ -269,7 +269,7 @@ Detail pages should be generated like the user detail page. Detail pages should 
   standalone: true,
   imports: [CommonModule, ItemDetailComponent, ToastModule],
   providers: [MessageService],
-  template: `<app-item-detail [config]="detailConfig"></app-item-detail>`,
+  template: `<pb-item-detail [config]="detailConfig"></pb-item-detail>`,
 })
 export class UserDetailComponent {
   detailConfig: ItemDetailConfig = {

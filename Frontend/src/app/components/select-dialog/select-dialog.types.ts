@@ -1,5 +1,5 @@
 import { Observable } from 'rxjs';
-import { QueryOptions, QueryResult } from '../../dto/query.dto';
+import { QueryOptions, QueryResult } from '../common-dto/query.dto';
 
 export interface SelectDialogColumn {
   field: string;

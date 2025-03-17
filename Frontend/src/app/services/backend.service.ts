@@ -4,7 +4,7 @@ import { Observable, catchError } from 'rxjs';
 import { environment } from '../../environments/environment';
 import { AuthService } from './auth.service';
 import { Router } from '@angular/router';
-import { QueryOptions, QueryResult } from '../dto/query.dto';
+import { QueryOptions, QueryResult } from '../components/common-dto/query.dto';
 
 @Injectable({
   providedIn: 'root',
@@ -65,18 +65,8 @@ export class BackendService {
       tenantParams = `&tenantId=${params.tenantId}`;
     }
 
-    let orderParams = '';
-    if (params.order !== undefined) {
-      const order = params.order;
-      Object.keys(params.order).forEach((key) => {
-        var ascDesc = order[key] === 1 ? 'ASC' : 'DESC';
-        orderParams = `{"${key}": "${ascDesc}"}`;
-      });
-      orderParams = `&order=${orderParams}`;
-    }
-
     return this.get<QueryResult<T>>(
-      `${path}?take=${params.take}&skip=${params.skip}${userParams}${allParams}${filterParams}${excludeMine}${orderParams}${tenantParams}`
+      `${path}?take=${params.take}&skip=${params.skip}${userParams}${allParams}${filterParams}${excludeMine}${tenantParams}`
     );
   }
 

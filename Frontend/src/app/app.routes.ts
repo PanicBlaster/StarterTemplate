@@ -16,6 +16,7 @@ import { AdminTenantListComponent } from './pages/admin/admin-tenant-list/admin-
 import { AdminUserListComponent } from './pages/admin/admin-user-list/admin-user-list.component';
 import { AdminTenantDetailComponent } from './pages/admin/admin-tenant-detail/admin-tenant-detail.component';
 import { AdminTenantUsersListComponent } from './pages/admin/admin-tenant-users-list/admin-tenant-users-list.component';
+import { AuthCognitoComponent } from './pages/auth/auth-cognito/auth-cognito.component';
 
 export const routes: Routes = [
   { path: 'auth', component: AuthComponent },
@@ -39,6 +40,10 @@ export const routes: Routes = [
   {
     path: 'authmicrosoft',
     component: AuthMicrosoftComponent,
+  },
+  {
+    path: 'authcognito',
+    component: AuthCognitoComponent,
   },
   {
     path: 'testitem',
@@ -217,5 +222,9 @@ export const routes: Routes = [
       ],
     },
     canActivate: [authGuard],
+  },
+  {
+    path: 'authcognito',
+    component: AuthCognitoComponent,
   },
 ];

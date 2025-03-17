@@ -1,6 +1,6 @@
 import { Observable } from 'rxjs';
 import { ToolbarAction, Metric } from '../page-toolbar/page-toolbar.types';
-import { QueryOptions, QueryResult } from '../../dto/query.dto';
+import { QueryOptions, QueryResult } from '../common-dto/query.dto';
 import { Params } from '@angular/router';
 
 export interface ColumnDefinition {
@@ -19,7 +19,7 @@ export interface ItemListDataService<T> {
   parseParams: (params: Params, queryParams: Params) => QueryOptions;
   loadItems(params: QueryOptions): Observable<QueryResult<T>>;
   deleteItem(params: QueryOptions, item: any): Observable<any>;
-  updateHeader?(params: QueryOptions, items: any[]): Promise<string>;
+  updateHeader?(params: QueryOptions, items: any[], total: number): string;
 }
 
 export interface ItemListConfig {
@@ -35,5 +35,4 @@ export interface ItemListConfig {
   defaultSortOrder?: 1 | -1;
   rowsPerPageOptions?: number[];
   enableSearch?: boolean;
-  searchPlaceholder?: string;
 }
