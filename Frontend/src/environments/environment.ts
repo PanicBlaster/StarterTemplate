@@ -10,4 +10,5 @@ export const environment = {
   cognitoDomain: 'your-cognito-domain',
   cognitoRegion: 'us-east-1', // adjust to your region
   cognitoScope: ['email', 'openid', 'aws.cognito.signin.user.admin', 'phone'],
+  cognitoRedirectUri: 'http://localhost:4201/authcognito',
 };
